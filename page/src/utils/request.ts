@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const service = axios.create({
-  baseURL: 'http://localhost:5000/api', // 后端API地址
+  baseURL: '/api', // 使用相对路径，将通过Vite代理转发
   timeout: 5000
 })
 

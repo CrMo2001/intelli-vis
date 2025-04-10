@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { test } from './api/test'
+import { onMounted } from 'vue'
 const response = ref('')
 
-test({ key: 'hello world' }).then((res) => {
-  response.value = res.data
-}).catch((err) => {
-  console.error(err)
+onMounted(() => {
+  console.log('onMounted')
+  test({ key: 'hello world' }).then((res) => {
+    response.value = res.data
+  }).catch((err) => {
+    console.error(err)
+  })
 })
+
 
 </script>
 
