@@ -1,0 +1,23 @@
+body {
+  font-family: Arial, sans-serif;
+  /* background-color: #f4f4f4; */
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg);
+}
+
+/* define vars */
+:root {
+  --color-bg: rgb(19, 33, 42);
+  --color-extra-light: rgb(120, 220, 255);
+  --color-light: rgb(86, 202, 255);
+  --color-mid: rgb(59, 144, 181);
+  --color-dark: rgb(31, 73, 92);
+  --color-mask-light: rgba(0, 0, 0, 0.2);
+  --color-mask: rgba(0, 0, 0, 0.5)
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-light) transparent;
+}
