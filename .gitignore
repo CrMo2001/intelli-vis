@@ -1,0 +1,10 @@
+data/
+
+# Environment files
+server/.env
+
+# Python
+__pycache__/
+
+# mac
+.DS_Store
