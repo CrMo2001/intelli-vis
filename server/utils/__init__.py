@@ -4,8 +4,8 @@ This module exports all the classes needed for visualization analysis and data p
 """
 
 # Import and re-export classes from their respective modules
-from utils.llm_config import configure_dspy, VisAnalysisSignature, DataPreprocesserSignature
-from utils.vis_analysis import VisAnalysis
+from utils.llm_config import configure_dspy, QueryAnalysisSignature, DataPreprocesserSignature
+from utils.query_analysis import QueryAnalysis
 from utils.data_preprocess import DataPreprocesser
 from utils.entry_point import EntryPoint
 
@@ -13,9 +13,9 @@ from utils.entry_point import EntryPoint
 configure_dspy()
 
 __all__ = [
-    'VisAnalysisSignature',
-    'DataPreprocesserSignature',
-    'VisAnalysis',
-    'DataPreprocesser',
-    'EntryPoint',
+    "QueryAnalysisSignature",
+    "DataPreprocesserSignature",
+    "QueryAnalysis",
+    "DataPreprocesser",
+    "EntryPoint",
 ]

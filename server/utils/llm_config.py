@@ -4,25 +4,37 @@ from pathlib import Path
 from typing import Dict, Any, List
 from dotenv import load_dotenv
 import dspy
+from utils.logger import get_logger, log_dict
+
+# 获取该模块的日志器
+logger = get_logger("llm_config")
 
 # Load environment variables
+logger.info("加载环境变量")
 load_dotenv()
 
 # Configure DSPy with OpenAI
 def configure_dspy():
+    logger.info("配置 DSPy 日志器")
     api_key = os.getenv("OPENAI_API_KEY")
     api_base = os.getenv("OPENAI_API_BASE")
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     
+    logger.info(f"使用模型: {model}")
+    
     # Configure model with optional base URL if specified
     if api_base:
+        logger.debug(f"使用自定义 API 基础地址: {api_base}")
         lm = dspy.LM(model, api_key=api_key, api_base=api_base)
     else:
+        logger.debug("使用默认 API 基础地址")
         lm = dspy.LM(model, api_key=api_key)
     
+    logger.info("完成 DSPy 配置")
     dspy.configure(lm=lm)
 
 # Initialize DSPy with configuration
+logger.info("初始化 DSPy 配置")
 configure_dspy()
 
 def load_chart_configs() -> List[Dict[str, Any]]:
@@ -30,20 +42,27 @@ def load_chart_configs() -> List[Dict[str, Any]]:
     Load all chart configurations from JSON files in the charts directory.
     Returns a list of VisChartConfig objects.
     """
+    logger.info("加载图表配置文件")
+    
     # Get the project root directory (assuming charts folder is at the project root)
     project_root = Path(__file__).parent.parent.parent
     charts_dir = project_root / "charts"
     
+    logger.debug(f"图表目录路径: {charts_dir}")
     configs = []
     
     # Check if directory exists
     if not charts_dir.exists() or not charts_dir.is_dir():
-        print(f"Warning: Charts directory not found at {charts_dir}")
+        logger.warning(f"图表目录未找到: {charts_dir}")
         return configs
     
     # Process all JSON files
-    for chart_file in charts_dir.glob("*.json"):
+    chart_files = list(charts_dir.glob("*.json"))
+    logger.info(f"找到 {len(chart_files)} 个图表配置文件")
+    
+    for chart_file in chart_files:
         try:
+            logger.debug(f"正在加载图表配置: {chart_file.name}")
             with open(chart_file, 'r') as f:
                 chart_data = json.load(f)
                 
@@ -60,6 +79,7 @@ def load_chart_configs() -> List[Dict[str, Any]]:
                             "name": channel["name"],
                             "type": channel["type"]
                         })
+                        
             # Create chart config dictionary
             if chart_id:
                 config = {
@@ -68,29 +88,40 @@ def load_chart_configs() -> List[Dict[str, Any]]:
                     "channels": channels
                 }
                 configs.append(config)
+                logger.debug(f"加载图表: {chart_id}, 通道数: {len(channels)}")
+            else:
+                logger.warning(f"跳过没有 ID 的图表配置: {chart_file.name}")
                 
         except Exception as e:
-            print(f"Error loading chart config from {chart_file}: {e}")
+            logger.error(f"加载图表配置失败 {chart_file}: {e}")
     
     return configs
 
 
 # Load chart configurations
+logger.info("加载全局图表配置")
 chart_configs = load_chart_configs()
+logger.info(f"共加载了 {len(chart_configs)} 个图表配置")
 
-# VisAnalysis Signature - For analyzing visualization requirements
-class VisAnalysisSignature(dspy.Signature):
+# Query Analysis Signature - For analyzing user queries about data or visualizations
+class QueryAnalysisSignature(dspy.Signature):
     """
-    Analyze user query and data to determine appropriate visualization from the list of candidates
+    Analyze user query and data to determine if the user wants a specific value or a visualization,
+    and select appropriate processing parameters.
     """
-    query: str = dspy.InputField(desc="User's query about data visualization")
+    query: str = dspy.InputField(desc="User's query about data or visualization")
     data_description: str = dspy.InputField(desc="Description of the dataset")
     data_sample: str = dspy.InputField(desc="Sample of the dataset (first few rows)")
     vis_template_candidate: List[Dict[str, Any]] = dspy.InputField(desc="List of visualization template candidates, each containing 'id', 'description', and 'channels' (list of dicts with 'name' and 'type')")
     
-    chart_id: str = dspy.OutputField(desc="Recommended chart id from the list of candidates")
+    query_type: str = dspy.OutputField(desc="Type of query: 'value' for specific numerical/data value queries, 'visualization' for visualization requests")
+    
+    # Fields for visualization queries
+    chart_id: str = dspy.OutputField(desc="ID of the selected visualization template from vis_template_candidate. Only needed when query_type is 'visualization'")
+    
+    # Common fields for both query types
     sheet_name: str = dspy.OutputField(desc="The name of the Excel sheet to use for data processing when working with multi-sheet Excel files")
-    preprocessing_instructions: str = dspy.OutputField(desc="Instructions for the data preprocessor on how to transform the data for visualization")
+    preprocessing_instructions: str = dspy.OutputField(desc="Instructions for the data preprocessor on how to transform the data for the query")
     
 
 # DataPreprocesser Signature - For generating data processing code
