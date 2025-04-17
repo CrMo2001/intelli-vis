@@ -81,22 +81,24 @@ except Exception as e:
         # Use default template if none provided
         if code_template is None:
             code_template = self.get_code_template()
-            
+
         # 准备生成数据处理代码
         generate_info = []
-        
+
         if previous_error:
             generate_info.append(f"重试生成(前次错误)")
-        
+
         if chart_id:
             channel_count = len(target_channels) if target_channels else 0
             generate_info.append(f"图表ID:{chart_id} 通道数:{channel_count}")
-        
-        sheet_info = sheet_name if sheet_name else '0 (默认)'
-        logger.info(f"生成数据处理代码 - 工作表:{sheet_info}{' ' + ', '.join(generate_info) if generate_info else ''}")
-        
+
+        sheet_info = sheet_name if sheet_name else "0 (默认)"
+        logger.info(
+            f"生成数据处理代码 - 工作表:{sheet_info}{' ' + ', '.join(generate_info) if generate_info else ''}"
+        )
+
         try:
-            
+
             response = self.module(
                 preprocessing_instructions=preprocessing_instructions,
                 data_description=data_description,
@@ -122,22 +124,19 @@ except Exception as e:
                     sheet_name if sheet_name else "0"
                 ),  # Default to first sheet if not specified
             )
-            
+
             # 记录成功生成的代码
             mapping_count = len(response.channel_mapping) if response.channel_mapping else 0
             logger.info(f"生成代码成功 - 映射了 {mapping_count} 个通道")
-            
+
             # Return both the code and the channel mapping
-            return {
-                "code": complete_code,
-                "channel_mapping": response.channel_mapping
-            }
+            return {"code": complete_code, "channel_mapping": response.channel_mapping}
         except Exception as e:
             logger.error(f"生成数据处理代码失败: {str(e)}")
             traceback.print_exc()
             return {
                 "error": f"Error generating preprocessing code: {str(e)}",
-                "channel_mapping": {}
+                "channel_mapping": {},
             }
 
     def process_with_retry(
@@ -173,9 +172,9 @@ except Exception as e:
         previous_error = None
 
         logger.info(f"数据处理开始 (最大重试次数: {max_attempts})")
-        
+
         for attempt in range(max_attempts):
-            
+
             # Generate code (with error feedback if available)
             code_result = self.generate_code(
                 preprocessing_instructions=preprocessing_instructions,
@@ -189,15 +188,15 @@ except Exception as e:
                 previous_code=previous_code,
                 previous_error=previous_error,
             )
-            
+
             # 检查是否生成代码时出错
             if "error" in code_result:
                 logger.error(f"代码生成失败: {code_result['error']}")
                 return code_result
-                
+
             complete_code = code_result["code"]
             channel_mapping = code_result["channel_mapping"]
-            
+
             logger.info(f"尝试 {attempt + 1}/{max_attempts} - 执行数据处理代码")
 
             # Execute the generated code
@@ -205,31 +204,29 @@ except Exception as e:
 
             # Check if execution was successful
             if isinstance(result, list):
-                logger.info(f"执行成功(尝试 {attempt + 1}/{max_attempts}) - 处理了 {len(result)} 条记录")
-                
+                logger.info(
+                    f"执行成功(尝试 {attempt + 1}/{max_attempts}) - 处理了 {len(result)} 条记录"
+                )
+
                 # Add the channel mapping to the result
-                return {
-                    "data": result,
-                    "channel_mapping": channel_mapping
-                }
+                return {"data": result, "channel_mapping": channel_mapping}
 
             # If we have an error and still have attempts left
-            error_msg = result.get('error', 'Unknown error')
-            
+            error_msg = result.get("error", "Unknown error")
+
             if attempt == max_attempts - 1:
                 logger.error(f"处理失败 - 达到最大重试次数 {max_attempts}, 错误: {error_msg}")
             else:
-                logger.warning(f"尝试 {attempt + 1}/{max_attempts} 失败 - 错误: {error_msg}, 准备重试")
-            
+                logger.warning(
+                    f"尝试 {attempt + 1}/{max_attempts} 失败 - 错误: {error_msg}, 准备重试"
+                )
+
             previous_code = complete_code
             previous_error = result.get("error", "") + "\n" + result.get("traceback", "")
-            
+
             # If we've reached max attempts, return the last error
             if attempt == max_attempts - 1:
-                return {
-                    "error": result.get("error", ""),
-                    "traceback": result.get("traceback", "")
-                }
+                return {"error": result.get("error", ""), "traceback": result.get("traceback", "")}
 
         # This should not be reached due to the return in the loop
         return {"error": "Max retry attempts reached"}
@@ -255,8 +252,12 @@ except Exception as e:
 
             # Run the script in a separate process
             logger.info(f"子进程执行数据处理脚本: {temp_file_path}")
+            logger.info(f"使用 Python 解释器: {os.getenv('PYTHON_INTERPRETER')}")
             result = subprocess.run(
-                ["python", temp_file_path], capture_output=True, text=True, check=True
+                [os.getenv("PYTHON_INTERPRETER"), temp_file_path],
+                capture_output=True,
+                text=True,
+                check=True,
             )
 
             # Clean up the temporary file
