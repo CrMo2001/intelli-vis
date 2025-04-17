@@ -124,11 +124,6 @@ except Exception as e:
                     sheet_name if sheet_name else "0"
                 ),  # Default to first sheet if not specified
             )
-<<<<<<< HEAD
-            # print(complete_code)
-=======
-
->>>>>>> 9bd76f2326ee06e56ace5263607c861e2582b5e0
             # 记录成功生成的代码
             mapping_count = len(response.channel_mapping) if response.channel_mapping else 0
             logger.info(f"生成代码成功 - 映射了 {mapping_count} 个通道")
