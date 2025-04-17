@@ -8,9 +8,9 @@ import { onMounted } from 'vue'
 import ChartComponent, { type ChartBinding } from './components/ChartComponent.vue';
 import HeaderComponent from './components/HeaderComponent.vue';
 import { id } from 'element-plus/es/locales.mjs';
-// const response = ref('')
+import { queryAPI, testQueryAPI } from './api/query';
 
-const response = ref('')
+const userQuery = ref('')
 const dialogBox = ref<InstanceType<typeof DialogBox> | null>(null)
 
 onMounted(() => {
@@ -72,91 +72,7 @@ const chartViewports5 = [
   { left: `${100 - vp3.pc + vp3.gw}%`, top: `${50 + vp3.gh / 2}%`, right: `${vp3.pw}%`, bottom: `${vp3.ph}%` },
 ]
 
-const fakeResponses: any[] = [
-  {
-
-  }
-]
-
-const chartResponses: Chart[] = [{
-  id: `chart-${idCounter++}`,
-  template: 'bar',
-  data: [
-    { name: 'A', value: 10 },
-    { name: 'B', value: 20 },
-    { name: 'C', value: 30 },
-    { name: 'D', value: 40 },
-    { name: 'E', value: 50 },
-  ],
-  bindings: [
-    { name: 'category', field: 'name' },
-    { name: 'value', field: 'value' }
-  ]
-},
-{
-  id: `chart-${idCounter++}`,
-  template: 'pie',
-  data: [
-    { name: 'A', value: 10 },
-    { name: 'B', value: 20 },
-    { name: 'C', value: 30 },
-    { name: 'D', value: 40 },
-    { name: 'E', value: 50 },
-  ],
-  bindings: [
-    { name: 'category', field: 'name' },
-    { name: 'value', field: 'value' }
-  ]
-},
-{
-  id: `chart-${idCounter++}`,
-  template: 'line',
-  data: [
-    { name: 'A', value: 10 },
-    { name: 'B', value: 20 },
-    { name: 'C', value: 30 },
-    { name: 'D', value: 40 },
-    { name: 'E', value: 50 },
-  ],
-  bindings: [
-    { name: 'category', field: 'name' },
-    { name: 'value', field: 'value' }
-  ]
-},
-{
-  id: `chart-${idCounter++}`,
-  template: 'scatter',
-  data: [
-    { name: 'A', value: 10 },
-    { name: 'B', value: 20 },
-    { name: 'C', value: 30 },
-    { name: 'D', value: 40 },
-    { name: 'E', value: 50 },
-  ],
-  bindings: [
-    { name: 'category', field: 'name' },
-    { name: 'value', field: 'value' }
-  ]
-},
-{
-  id: `chart-${idCounter++}`,
-  template: 'radar',
-  data: [
-    { name: 'A', value: 10 },
-    { name: 'B', value: 20 },
-    { name: 'C', value: 30 },
-    { name: 'D', value: 40 },
-    { name: 'E', value: 50 },
-  ],
-  bindings: [
-    { name: 'category', field: 'name' },
-    { name: 'value', field: 'value' }
-  ]
-}
-]
-
-function addChart() {
-  const chart = chartResponses.shift();
+function addChart(chart: Chart) {
   if (!chart) {
     return
   }
@@ -185,6 +101,46 @@ function addChart() {
 
 const isQuerying = ref(false)
 
+function getBinding(obj: any): ChartBinding[] {
+  const bindings: ChartBinding[] = []
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const value = obj[key]
+      bindings.push({ name: key, field: value })
+    }
+  }
+  return bindings
+}
+
+function handleResponse(data: any) {
+  if (data["query_type"] == "visualization") {
+    const chartData = data["data"];
+    const templateId = data["chart_id"];
+    const bindings = getBinding(data["channel_mapping"]);
+    const chart = {
+      id: `chart-${idCounter++}`,
+      template: templateId,
+      data: chartData,
+      bindings: bindings
+    }
+    addChart(chart)
+    dialogBox.value?.addMessage({
+      content: '查询成功，图表已生成',
+      sender: 'assistant'
+    })
+  } else {
+    const dataObj = data["data"][0];
+    const keyValues = Object.entries(dataObj).map(([key, value]) => {
+      return `${key}: ${value}`
+    })
+    const content = keyValues.join('\n')
+    dialogBox.value?.addMessage({
+      content: content,
+      sender: 'assistant'
+    })
+  }
+}
+
 function query() {
   if (!dialogBox.value) {
     return
@@ -192,23 +148,40 @@ function query() {
   if (isQuerying.value) {
     return
   }
-  isQuerying.value = true
-
+  if (!userQuery.value) {
+    console.log('input is empty')
+    return
+  }
   dialogBox.value.addMessage({
-    // content: response.value,
-    content: "Hello, this is a test message.",
+    content: userQuery.value,
     sender: 'user'
   })
   dialogBox.value.setLoading(true)
-  setTimeout(() => {
+  isQuerying.value = true
+
+  queryAPI({ query: userQuery.value }).then((res: any) => {
+    console.log(res)
+    if (res.code == 200) {
+      const data = res.data
+      console.log(data);
+      handleResponse(data);
+    } else {
+      dialogBox.value?.addMessage({
+        content: '查询失败，请稍后再试',
+        sender: 'assistant'
+      })
+    }
+  }).catch((err) => {
+    console.error(err)
     dialogBox.value?.addMessage({
-      content: "图表已生成",
+      content: '查询失败，请稍后再试',
       sender: 'assistant'
     })
-    dialogBox.value?.setLoading(false)
+  }).finally(() => {
     isQuerying.value = false
-    addChart()
-  }, 500)
+    dialogBox.value?.setLoading(false)
+  })
+  userQuery.value = ''
 }
 
 </script>
@@ -246,7 +219,7 @@ function query() {
         </div>
         <div class="divider"></div>
         <div class="input-container">
-          <input placeholder="请输入查询内容" v-model="response" class="input-textarea" />
+          <input placeholder="请输入查询内容" v-model="userQuery" class="input-textarea" />
           <button @click=query class="query-button">
             <ElIcon>
               <Search />

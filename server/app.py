@@ -21,6 +21,7 @@ def query():
     try:
         # 获取用户查询
         data = request.get_json()
+        print(data)
         query = data.get("query")
 
         if not query:

@@ -1,37 +1,14 @@
 {
   "id": "bar",
   "description": "TODO: finish the description for LLM",
-  "option": {
-    "tooltip": { "trigger": "axis", "axisPointer": { "type": "shadow" } },
-    "grid": { "left": "3%", "right": "4%", "bottom": "3%", "containLabel": true },
-    "xAxis": [ { "type": "category", "data": [ "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" ], "axisTick": { "alignWithLabel": true }, "splitLine": { "show": false } } ],
-    "yAxis": [ { "type": "value" } ],
-    "series": [ { "name": "Direct", "type": "bar", "barWidth": "60%", "data": [ 10, 52, 200, 334, 390, 330, 220 ] } ]
-  },
   "channels": [
     {
       "name": "category",
-      "type": "category",
-      "instances": [
-        {
-          "type": "data",
-          "url": [ "xAxis", 0, "data" ]
-        }
-      ]
+      "type": "category"
     },
     {
       "name": "value",
-      "type": "value",
-      "instances": [
-        {
-          "type": "data",
-          "url": [ "series", 0, "data" ]
-        },
-        {
-          "type": "name",
-          "url": [ "series", 0, "name" ]
-        }
-      ]
+      "type": "value"
     }
   ]
 }

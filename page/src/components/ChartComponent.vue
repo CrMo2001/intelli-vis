@@ -2,6 +2,7 @@
 import { chartTemplates } from '../utils/chartTemplates';
 import { onMounted } from 'vue';
 import * as echarts from 'echarts'
+import { chartBuilders } from '../utils/chartBuilder';
 
 export type ChartBinding = {
   name: string;
@@ -17,19 +18,6 @@ const props = defineProps<{
 
 let chart: echarts.ECharts | null = null
 
-function setValueByUrl(object: any, url: (string | number)[], value: any) {
-  const lastKey = url[url.length - 1];
-  let current = object;
-  for (let i = 0; i < url.length - 1; i++) {
-    const key = url[i]
-    if (!current[key]) {
-      current[key] = {};
-    }
-    current = current[key];
-  }
-  current[lastKey] = value;
-}
-
 function resizeChart() {
   if (chart) {
     chart.resize();
@@ -40,30 +28,20 @@ onMounted(() => {
   const chartContainer = document.getElementById(props.id);
   if (chartContainer) {
     chart = echarts.init(chartContainer, "theme1");
-    const chartTemplate = chartTemplates.find(template => template.id === props.template);
+    const chartTemplate = chartTemplates[props.template];
     if (!chartTemplate) {
       console.error(`Chart template ${props.template} not found`);
       return;
     }
-    const option = JSON.parse(JSON.stringify(chartTemplate.option));
-    for (let channel of chartTemplate.channels) {
-      const binding = props.bindings.find(binding => binding.name === channel.name);
-      if (!binding) {
-        continue;
-      }
-      for (let instance of channel.instances) {
-        if (instance.type == "data") {
-          const data = props.data.map(item => item[binding.field]);
-          setValueByUrl(option, instance.url, data);
-        } else if (instance.type == "name") {
-          setValueByUrl(option, instance.url, binding.field);
-        } else {
-          console.error(`Unknown instance type: ${instance.type}`);
-        }
-      }
+    const chartBuilder = chartBuilders[props.template];
+    if (!chartBuilder) {
+      console.error(`Chart builder for type ${props.template} not found`);
+      return;
     }
-    console.log(option);
-    chart.setOption(option);
+    const chartOption = chartBuilder.build(chartBuilder.option, props.data, props.bindings);
+    chart.setOption(chartOption, true);
+    console.log(chartOption);
+
     const resizeObserver = new ResizeObserver(() => { resizeChart() })
     resizeObserver.observe(chartContainer)
     // window.addEventListener('resize', function () {
@@ -109,7 +87,9 @@ defineExpose({
 }
 
 .chart-container {
+  position: relative;
   width: 100%;
-  height: 100%;
+  top: 3vh;
+  height: calc(100% - 3vh);
 }
 </style>

@@ -1,13 +1,9 @@
 {
-  "id": "radar",
+  "id": "geo",
   "description": "TODO: finish the description for LLM",
   "channels": [
     {
-      "name": "series",
-      "type": "category"
-    },
-    {
-      "name": "field",
+      "name": "city",
       "type": "category"
     },
     {
