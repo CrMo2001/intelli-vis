@@ -114,10 +114,14 @@ class QueryAnalysisSignature(dspy.Signature):
     data_sample: str = dspy.InputField(desc="Sample of the dataset (first few rows)")
     vis_template_candidate: List[Dict[str, Any]] = dspy.InputField(desc="List of visualization template candidates, each containing 'id', 'description', and 'channels' (list of dicts with 'name' and 'type')")
     
-    query_type: str = dspy.OutputField(desc="Type of query: 'value' for specific numerical/data value queries, 'visualization' for visualization requests")
+    query_type: str = dspy.OutputField(desc="Type of query: 'value' for specific numerical/data value queries, 'visualization' for visualization requests, 'report' for report generation")
     
     # Fields for visualization queries
     chart_id: str = dspy.OutputField(desc="ID of the selected visualization template from vis_template_candidate. Only needed when query_type is 'visualization'")
+
+    # Fields for report generation
+    province: str = dspy.OutputField(desc="Province name for report generation. Only needed when query_type is 'report'")
+    year: str = dspy.OutputField(desc="Year for report generation. Only needed when query_type is 'report'")
     
     # Common fields for both query types
     sheet_name: str = dspy.OutputField(desc="The name of the Excel sheet to use for data processing when working with multi-sheet Excel files")

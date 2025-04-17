@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from utils.entry_point import EntryPoint
 from utils.data_init import DATA_PATH, DATA_DESCRIPTION, load_data_sample
@@ -38,11 +38,16 @@ def query():
         if "error" in result:
             return jsonify({"code": 500, "message": result["error"], "data": None})
 
-        # 限制数据大小
-        # if result.get("data") and len(result["data"]) > 100:
-        #     result["data"] = result["data"][:100]
-        #     result["truncated"] = True
+        # 如果是报告生成类型，返回文件下载
+        if result.get("query_type") == "report" and "report_path" in result:
+            return send_file(
+                result["report_path"],
+                mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                as_attachment=True,
+                download_name=f"{result.get('province', '湖北')}_{result.get('year', '2022')}年能源消费分析报告.docx",
+            )
 
+        # 其他分析类型返回JSON数据
         return jsonify({"code": 200, "message": "分析成功", "data": result})
 
     except Exception as e:
