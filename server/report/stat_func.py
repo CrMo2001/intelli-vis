@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
-import matplotlib as mpl
-from datetime import datetime
 import platform
 from pathlib import Path
 import os
@@ -15,7 +13,7 @@ MODULE_DIR = Path(__file__).parent
 DEFAULT_PATHS = {
     "template": MODULE_DIR / "template1.docx",
     "output": MODULE_DIR / "output1.docx",
-    "temp_images": MODULE_DIR / "temp_images"
+    "temp_images": MODULE_DIR / "temp_images",
 }
 
 
@@ -508,7 +506,9 @@ def plot_energy_intensity(
     return fig
 
 
-def get_docx_placeholder_replacement_values(datas: list[pd.DataFrame], year: int, province: str, temp_dir=None):
+def get_docx_placeholder_replacement_values(
+    datas: list[pd.DataFrame], year: int, province: str, temp_dir=None
+):
 
     # 创建用于保存结果的字典
     res = {
@@ -718,13 +718,15 @@ def generate_abstract_with_llm(full_text, year, province):
     return generate_text_with_llm(full_text, prompt, max_tokens=500, temperature=0.5)
 
 
-def replace_docx_placeholders(replacement_values: dict[str, any], template_path=None, output_path=None):
+def replace_docx_placeholders(
+    replacement_values: dict[str, any], template_path=None, output_path=None
+):
     # 使用默认路径或自定义路径
     if template_path is None:
         template_path = DEFAULT_PATHS["template"]
     if output_path is None:
         output_path = DEFAULT_PATHS["output"]
-        
+
     # 确保路径是Path对象
     template_path = Path(template_path)
     output_path = Path(output_path)
