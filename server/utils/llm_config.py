@@ -122,6 +122,9 @@ class QueryAnalysisSignature(dspy.Signature):
     chart_id: str = dspy.OutputField(
         desc="ID of the selected visualization template from vis_template_candidate. Only needed when query_type is 'visualization'"
     )
+    chart_title: str = dspy.OutputField(
+        desc="Title of the selected visualization template. Only needed when query_type is 'visualization'"
+    )
 
     # Fields for report generation
     province: str = dspy.OutputField(
@@ -176,15 +179,18 @@ class DataPreprocesserSignature(dspy.Signature):
         desc="Mapping between visualization channel names (keys) and actual dataframe column names (values). Example: {'category': 'industry_type', 'value': 'energy_consumption'}"
     )
 
+
 class DataResponseSignature(dspy.Signature):
     """
     Generate a natural language response to the user based on their query and the processed data results.
     This response should interpret the data in context of the original query and explain key insights.
     """
-    
+
     query: str = dspy.InputField(desc="User's original query about data or visualization")
-    processed_results: List[Dict[str, Any]] = dspy.InputField(desc="Processed data results in DataFrame records format")
-    
+    processed_results: List[Dict[str, Any]] = dspy.InputField(
+        desc="Processed data results in DataFrame records format"
+    )
+
     response: str = dspy.OutputField(
         desc="Natural language response explaining the data results in context of the user's query. Should be detailed, informative, and directly answer the user's question. You can also add a little bit of insights."
     )

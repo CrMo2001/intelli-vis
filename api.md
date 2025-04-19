@@ -36,7 +36,8 @@
       {
         [key: string]: string
       }
-    ]
+    ],
+    response: string
   }
 }
 ```
@@ -50,6 +51,7 @@
   data: {
     query_type: "visualization",
     chart_id: string,
+    chart_title: string,
     channel_mapping: {
       [key: string]: string
     },
