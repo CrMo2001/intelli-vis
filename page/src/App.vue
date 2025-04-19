@@ -1,115 +1,61 @@
 <script setup lang="ts">
-import { ElContainer, ElHeader, ElMain, ElFooter, ElInput, ElButton, ElIcon } from 'element-plus';
-import DialogBox from './components/MessageBox.vue';
-import { Search } from '@element-plus/icons-vue'
-import { ref } from 'vue'
+import { ElContainer, ElHeader, ElMain, ElFooter, ElInput, ElButton, ElIcon } from "element-plus";
+import DialogBox from "./components/MessageBox.vue";
+import { Search } from "@element-plus/icons-vue";
+import { ref } from "vue";
 // import { test } from './api/test'
-import { onMounted } from 'vue'
-import ChartComponent, { type ChartBinding } from './components/ChartComponent.vue';
-import HeaderComponent from './components/HeaderComponent.vue';
-import { id } from 'element-plus/es/locales.mjs';
-import { queryAPI, testQueryAPI } from './api/query';
+import { onMounted } from "vue";
+import ChartComponent, { type ChartBinding } from "./components/ChartComponent.vue";
+import HeaderComponent from "./components/HeaderComponent.vue";
+import { queryAPI, testQueryAPI } from "./api/query";
+import { LayoutController } from "./utils/layoutController";
 
-const userQuery = ref('')
-const dialogBox = ref<InstanceType<typeof DialogBox> | null>(null)
+const userQuery = ref("");
+const dialogBox = ref<InstanceType<typeof DialogBox> | null>(null);
 
-onMounted(() => {
-  // console.log('onMounted')
-  // test({ key: 'hello world' }).then((res) => {
-  //   response.value = res.data
-  // }).catch((err) => {
-  //   console.error(err)
-  // })
-})
+onMounted(() => { });
 
 type Chart = {
-  id: string
-  template: string
-  data: any[]
-  bindings: ChartBinding[]
-}
+  id: string;
+  title: string;
+  template: string;
+  data: any[];
+  bindings: ChartBinding[];
+};
 
-type ChartViewport = {
-  left: string
-  top: string
-  right: string
-  bottom: string
-}
+let idCounter = 0;
 
-let idCounter = 0
-
-const charts = ref<Chart[]>([])
-const chartViewports = ref<ChartViewport[]>([])
-
-
-const chartViewports1 = [
-  { left: "20%", top: "5%", right: "20%", bottom: "35%" },
-]
-
-const vp2 = {
-  pw: 5,
-  ph: 10,
-  g: 5,
-}
-const chartViewports2 = [
-  { left: `${50 + vp2.g / 2}%`, top: `${vp2.ph}%`, right: `${vp2.pw}%`, bottom: `${vp2.ph + 30}%` },
-  { left: `${vp2.pw}%`, top: `${vp2.ph}%`, right: `${50 + vp2.g / 2}%`, bottom: `${vp2.ph + 30}%` },
-]
-
-const vp3 = {
-  pw: 2,
-  ph: 5,
-  gw: 2,
-  gh: 5,
-  pc: 30,
-}
-
-const chartViewports5 = [
-  { left: `${vp3.pc}%`, top: `${vp3.ph}%`, right: `${vp3.pc}%`, bottom: `${vp3.ph + 30}%` },
-  { left: `${vp3.pw}%`, top: `${vp3.ph}%`, right: `${100 - vp3.pc + vp3.gw}%`, bottom: `${50 + vp3.gh / 2}%` },
-  { left: `${100 - vp3.pc + vp3.gw}%`, top: `${vp3.ph}%`, right: `${vp3.pw}%`, bottom: `${50 + vp3.gh / 2}%` },
-  { left: `${vp3.pw}%`, top: `${50 + vp3.gh / 2}%`, right: `${100 - vp3.pc + vp3.gw}%`, bottom: `${vp3.ph}%` },
-  { left: `${100 - vp3.pc + vp3.gw}%`, top: `${50 + vp3.gh / 2}%`, right: `${vp3.pw}%`, bottom: `${vp3.ph}%` },
-]
+const charts = ref<Chart[]>([]);
+const layoutController = ref(new LayoutController());
 
 function addChart(chart: Chart) {
   if (!chart) {
-    return
+    return;
   }
   if (charts.value.length >= 5) {
-    const replacedIndex = (charts.value.length - 1) % 4 + 1;
-    charts.value.push(charts.value[replacedIndex])
-    charts.value[replacedIndex] = charts.value[0]
+    const replacedIndex = ((charts.value.length - 1) % 4) + 1;
+    charts.value.push(charts.value[replacedIndex]);
+    charts.value[replacedIndex] = charts.value[0];
     charts.value[0] = chart;
   } else {
-    charts.value.push(chart)
+    charts.value.push(chart);
     const newLength = charts.value.length;
     [charts.value[0], charts.value[newLength - 1]] = [charts.value[newLength - 1], charts.value[0]];
   }
-  // if (charts.value.length == 0) {
-  // } else {
-  //   charts.value = [chart, ...charts.value]
-  // }
-  if (charts.value.length >= 3) {
-    chartViewports.value = chartViewports5
-  } else if (charts.value.length >= 2) {
-    chartViewports.value = chartViewports2
-  } else {
-    chartViewports.value = chartViewports1
-  }
+  layoutController.value.updateVisCoords(charts.value.length);
 }
 
-const isQuerying = ref(false)
+const isQuerying = ref(false);
 
 function getBinding(obj: any): ChartBinding[] {
-  const bindings: ChartBinding[] = []
+  const bindings: ChartBinding[] = [];
   for (const key in obj) {
     if (obj.hasOwnProperty(key)) {
-      const value = obj[key]
-      bindings.push({ name: key, field: value })
+      const value = obj[key];
+      bindings.push({ name: key, field: value });
     }
   }
-  return bindings
+  return bindings;
 }
 
 function handleResponse(data: any) {
@@ -118,72 +64,157 @@ function handleResponse(data: any) {
     const templateId = data["chart_id"];
     const bindings = getBinding(data["channel_mapping"]);
     const chart = {
-      id: `chart-${idCounter++}`,
+      id: `chart-${idCounter}`,
       template: templateId,
       data: chartData,
-      bindings: bindings
-    }
-    addChart(chart)
+      bindings: bindings,
+      title: data["chart_title"] || `图表 ${idCounter + 1}`
+    };
+    idCounter++;
+    addChart(chart);
     dialogBox.value?.addMessage({
-      content: '查询成功，图表已生成',
-      sender: 'assistant'
-    })
+      content: "查询成功，图表已生成",
+      sender: "assistant"
+    });
   } else {
     const dataObj = data["data"][0];
     const keyValues = Object.entries(dataObj).map(([key, value]) => {
-      return `${key}: ${value}`
-    })
-    const content = keyValues.join('\n')
+      return `${key}: ${value}`;
+    });
+    const content = keyValues.join("\n");
     dialogBox.value?.addMessage({
       content: content,
-      sender: 'assistant'
-    })
+      sender: "assistant"
+    });
   }
 }
 
 function query() {
   if (!dialogBox.value) {
-    return
+    return;
   }
   if (isQuerying.value) {
-    return
+    return;
   }
-  if (!userQuery.value) {
-    console.log('input is empty')
-    return
-  }
+  // if (!userQuery.value) {
+  //   console.log('input is empty')
+  //   return
+  // }
   dialogBox.value.addMessage({
     content: userQuery.value,
-    sender: 'user'
-  })
-  dialogBox.value.setLoading(true)
-  isQuerying.value = true
+    sender: "user"
+  });
+  dialogBox.value.setLoading(true);
+  isQuerying.value = true;
 
-  queryAPI({ query: userQuery.value }).then((res: any) => {
-    console.log(res)
-    if (res.code == 200) {
-      const data = res.data
-      console.log(data);
-      handleResponse(data);
-    } else {
-      dialogBox.value?.addMessage({
-        content: '查询失败，请稍后再试',
-        sender: 'assistant'
-      })
-    }
-  }).catch((err) => {
-    console.error(err)
-    dialogBox.value?.addMessage({
-      content: '查询失败，请稍后再试',
-      sender: 'assistant'
+  queryAPI({ query: userQuery.value })
+    .then((res: any) => {
+      console.log(res);
+      if (res.code == 200) {
+        const data = res.data;
+        console.log(data);
+        handleResponse(data);
+      } else {
+        dialogBox.value?.addMessage({
+          content: "查询失败，请稍后再试",
+          sender: "assistant"
+        });
+      }
     })
-  }).finally(() => {
-    isQuerying.value = false
-    dialogBox.value?.setLoading(false)
-  })
-  userQuery.value = ''
+    .catch((err) => {
+      console.error(err);
+      dialogBox.value?.addMessage({
+        content: "查询失败，请稍后再试",
+        sender: "assistant"
+      });
+    })
+    .finally(() => {
+      isQuerying.value = false;
+      dialogBox.value?.setLoading(false);
+    });
+  userQuery.value = "";
 }
 
+// moving charts
+const movingIndex = ref(-1);
+const hoveringIndex = ref(-1);
+const isMoving = ref(false);
+const cursorPos = ref({ x: 0, y: 0 });
+const cursorPosOffset = ref({ x: 0, y: 0 });
+const movingChartDimensions = ref({ width: 0, height: 0 });
+
+function handleMouseEnter(index: number) {
+  hoveringIndex.value = index;
+  console.log("hoveringIndex", hoveringIndex.value);
+}
+
+function handleMouseLeave() {
+  hoveringIndex.value = -1;
+  console.log("hoveringIndex", hoveringIndex.value);
+}
+
+function startMoving(index: number, e: MouseEvent) {
+  console.log("startMoving", index);
+  if (isMoving.value) {
+    return;
+  }
+  const chartContainer = document.getElementById(`container${index}`);
+  if (!chartContainer) {
+    console.error(`Chart container ${index} not found`);
+    return;
+  }
+  const chartsContainer = document.getElementById("charts-container");
+  if (!chartsContainer) {
+    console.error(`Charts container not found`);
+    return;
+  }
+  isMoving.value = true;
+  movingIndex.value = index;
+  const chartRect = chartContainer.getBoundingClientRect();
+  const chartsContainerRect = chartsContainer.getBoundingClientRect();
+  console.log("chartRect", chartRect);
+  movingChartDimensions.value.width = chartRect.width;
+  movingChartDimensions.value.height = chartRect.height;
+  cursorPosOffset.value.x = e.clientX - chartRect.left + chartsContainerRect.left;
+  cursorPosOffset.value.y = e.clientY - chartRect.top + chartsContainerRect.top;
+  cursorPos.value.x = e.clientX;
+  cursorPos.value.y = e.clientY;
+
+  window.onmouseup = (e: MouseEvent) => {
+    console.log("mouseup", e.clientX, e.clientY);
+    stopMoving();
+  };
+  window.onmousemove = (e: MouseEvent) => {
+    // console.log("mousemove", e.clientX, e.clientY);
+    if (!isMoving.value) {
+      return;
+    }
+    cursorPos.value.x = e.clientX;
+    cursorPos.value.y = e.clientY;
+  };
+  document.body.style.cursor = "grabbing";
+  // emit children event
+  e.stopPropagation();
+  e.preventDefault();
+}
+
+function stopMoving() {
+  if (!isMoving.value) {
+    return;
+  }
+  isMoving.value = false;
+
+  if (hoveringIndex.value != -1) {
+    const temp = charts.value[movingIndex.value];
+    charts.value[movingIndex.value] = charts.value[hoveringIndex.value];
+    charts.value[hoveringIndex.value] = temp;
+    hoveringIndex.value = -1;
+  }
+
+  document.body.style.cursor = "default";
+  onmousemove = null;
+  onmouseup = null;
+}
 </script>
 
 <template>
@@ -193,25 +224,50 @@ function query() {
       <HeaderComponent />
     </el-header>
     <el-main class="app-main">
-      <div class="charts-container">
+      <div class="charts-container" id="charts-container">
         <transition-group name="list" tag="div">
-          <div v-for="(chart, index) in charts.slice(0, 5)" :key="chart.id" class="chart-container" :style="{
-            left: chartViewports[index].left,
-            top: chartViewports[index].top,
-            right: chartViewports[index].right,
-            bottom: chartViewports[index].bottom
-          }">
+          <div v-for="(chart, index) in charts.slice(0, 5)" :key="chart.id" :id="`container${index}`"
+            class="chart-container" :style="{
+              inset: !isMoving
+                ? `${layoutController.visCoords[index].top} ${layoutController.visCoords[index].right} ${layoutController.visCoords[index].bottom} ${layoutController.visCoords[index].left}`
+                : index == movingIndex
+                  ? `${cursorPos.y - cursorPosOffset.y}px auto auto ${cursorPos.x - cursorPosOffset.x}px`
+                  : index == hoveringIndex
+                    ? `${layoutController.visCoords[movingIndex].top} ${layoutController.visCoords[movingIndex].right} ${layoutController.visCoords[movingIndex].bottom} ${layoutController.visCoords[movingIndex].left}`
+                    : `${layoutController.visCoords[index].top} ${layoutController.visCoords[index].right} ${layoutController.visCoords[index].bottom} ${layoutController.visCoords[index].left}`,
+
+              width: isMoving && index == movingIndex ? `${movingChartDimensions.width}px` : 'auto',
+              height: isMoving && index == movingIndex ? `${movingChartDimensions.height}px` : 'auto',
+
+              transition: isMoving && index == movingIndex ? 'none' : 'all 0.3s ease'
+              // left: layoutController.visCoords[index].left,
+              // top: layoutController.visCoords[index].top,
+              // right: layoutController.visCoords[index].right,
+              // bottom: layoutController.visCoords[index].bottom
+            }">
             <ChartComponent :id="chart.id" :key="chart.id" :template="chart.template" :data="chart.data"
-              :bindings="chart.bindings" />
-            <!-- <p>{{ chart.id }}</p> -->
+              :bindings="chart.bindings" :title="chart.title" @chart-move="(e) => startMoving(index, e)" />
           </div>
         </transition-group>
       </div>
+      <div class="moving-mask-container" v-if="isMoving">
+        <div v-for="(chart, index) in charts.slice(0, 5)" :key="chart.id" class="moving-mask" :style="{
+          left: layoutController.visCoords[index].left,
+          top: layoutController.visCoords[index].top,
+          right: layoutController.visCoords[index].right,
+          bottom: layoutController.visCoords[index].bottom
+        }" @mouseenter="handleMouseEnter(index)" @mouseleave="handleMouseLeave"></div>
+      </div>
 
-      <div class="dialog-container">
+      <div class="dialog-container" :style="{
+        left: layoutController.dialogCoords.left,
+        top: layoutController.dialogCoords.top,
+        right: layoutController.dialogCoords.right,
+        bottom: layoutController.dialogCoords.bottom
+      }">
         <div class="dialog-background">
-          <img src="./assets/cornerArc.svg" style="width:2vh;">
-          <img src="./assets/cornerArc.svg" style="width:2vh; rotate:90deg; position:absolute; right:0;">
+          <img src="./assets/cornerArc.svg" style="width: 2vh" />
+          <img src="./assets/cornerArc.svg" style="width: 2vh; rotate: 90deg; position: absolute; right: 0" />
         </div>
         <div class="dialog-title">AI 助手</div>
         <div class="message-container">
@@ -220,7 +276,7 @@ function query() {
         <div class="divider"></div>
         <div class="input-container">
           <input placeholder="请输入查询内容" v-model="userQuery" class="input-textarea" />
-          <button @click=query class="query-button">
+          <button @click="query" class="query-button">
             <ElIcon>
               <Search />
             </ElIcon>
@@ -258,7 +314,19 @@ function query() {
   position: absolute;
   /* background-color: aqua; */
   /* border: 1px solid #32a1ce; */
-  transition: all 0.3s ease;
+  /* transition: all 0.3s ease; */
+}
+
+.moving-mask-container {
+  position: relative;
+  translate: 0 -100%;
+  width: 100%;
+  height: 100%;
+}
+
+.moving-mask {
+  position: absolute;
+  background-color: rgba(255, 0, 0, 0.0);
 }
 
 .app-footer {
@@ -270,15 +338,12 @@ function query() {
 
 .dialog-container {
   position: absolute;
-  left: 30%;
-  right: 30%;
-  top: 70%;
-  bottom: 0%;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  transition: all 0.3s ease;
 }
 
 .dialog-background {
@@ -372,7 +437,7 @@ function query() {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-image: url('./assets/background.png');
+  background-image: url("./assets/background.png");
   background-size: cover;
   opacity: 0.03;
   z-index: -1;

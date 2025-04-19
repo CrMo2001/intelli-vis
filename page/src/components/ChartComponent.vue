@@ -14,7 +14,16 @@ const props = defineProps<{
   template: string;
   data: any[];
   bindings: ChartBinding[];
+  title: string;
 }>()
+
+const emits = defineEmits<{
+  (e: 'chart-move', event: MouseEvent): void;
+}>()
+
+function handleMouseDown(e: MouseEvent) {
+  emits('chart-move', e)
+}
 
 let chart: echarts.ECharts | null = null
 
@@ -62,7 +71,10 @@ defineExpose({
     <img src="../assets/cornerArc.svg" style="width:2vh; position: absolute; right:0; rotate:90deg;">
     <img src="../assets/cornerArc.svg" style="width:2vh; position: absolute; right:0; bottom:0; rotate:180deg;">
     <img src="../assets/cornerArc.svg" style="width:2vh; position: absolute; bottom:0; rotate:270deg;">
-    <div class="chart-title">图表标题</div>
+  </div>
+  <div class="chart-header">
+    <div class="chart-title">{{ props.title }}</div>
+    <div class="moving-icon" @mousedown="handleMouseDown">move</div>
   </div>
   <div class="chart-container" :id="props.id">
 
@@ -79,11 +91,28 @@ defineExpose({
   z-index: -1;
 }
 
+.chart-header {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  padding: 1.5vh;
+}
+
 .chart-title {
   color: white;
-  padding: 1.5vh;
   font-size: 1.5vh;
   font-weight: bold;
+}
+
+.moving-icon {
+  background-color: transparent;
+  color: var(--color-light);
+  border: none;
+  border-radius: 1vh;
+  padding: 0;
+  margin-left: auto;
+  cursor: pointer;
 }
 
 .chart-container {

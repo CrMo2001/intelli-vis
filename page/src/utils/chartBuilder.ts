@@ -156,7 +156,7 @@ export const chartBuilders: Record<string, ChartBuilder> = {
           "avoidLabelOverlap": false,
           "itemStyle": { "borderRadius": 10, "borderColor": "#000", "borderWidth": 2 },
           "label": { "show": false, "position": "center" },
-          "emphasis": { "label": { "show": true, "fontSize": 40, "fontWeight": "bold" } },
+          // "emphasis": { "label": { "show": true, "fontSize": 40, "fontWeight": "bold" } },
           "labelLine": { "show": false },
           "data": [
             { "value": 1048, "name": "Search Engine" },
