@@ -69,6 +69,8 @@ class EntryPoint:
                 query, data_description, data_sample, self.chart_configs
             )
 
+            logger.info(f"查询分析结果: {analysis_result}")
+
             # 检查错误
             if "error" in analysis_result:
                 logger.error(f"查询分析失败: {analysis_result['error']}")
@@ -117,6 +119,7 @@ class EntryPoint:
             elif query_type == "visualization":  # 处理可视化查询
                 # 获取图表信息
                 chart_id = analysis_result.get("chart_id")
+                chart_title = analysis_result.get("chart_title", "")
 
                 # 查找匹配的图表配置
                 target_chart = next(
@@ -157,6 +160,7 @@ class EntryPoint:
                     "query_type": "visualization",
                     "data": processed_res["data"],
                     "chart_id": chart_id,
+                    "chart_title": chart_title,
                     "channel_mapping": channel_mapping,
                 }
 

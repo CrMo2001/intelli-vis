@@ -48,8 +48,8 @@ def test_analyze_api(query):
 if __name__ == "__main__":
     # 测试查询
     # query = "生成2022年湖北省能源消费报告"
-    query = "查询湖北省2006年总的能源消费"
-    # query = "查询湖北省2006年不同企业类型能源消费情况"
+    # query = "查询湖北省2006年总的能源消费"
+    query = "查询湖北省2006年不同企业类型能源消费情况的示意图"
 
     # 运行测试
     result = test_analyze_api(query)
