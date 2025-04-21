@@ -2,6 +2,9 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from utils.entry_point import EntryPoint
 from utils.data_init import DATA_PATH, DATA_DESCRIPTION, load_data_sample
+from utils.logger import get_logger
+
+logger = get_logger("app")
 
 entry_point = EntryPoint()
 
@@ -25,6 +28,8 @@ def query():
         data = request.get_json()
         print(data)
         query = data.get("query")
+        vast_system_state = data.get("vast_system_state")
+        message_history = data.get("message_history")
 
         if not query:
             return jsonify({"code": 400, "message": "缺少查询文本", "data": None})
@@ -35,7 +40,10 @@ def query():
             data_path=DATA_PATH,
             data_description=DATA_DESCRIPTION,
             data_sample=load_data_sample(),
+            vast_system_state=vast_system_state,
+            message_history=message_history,
         )
+        logger.info(f"处理结果: {result}")
 
         # 检查错误
         if "error" in result:

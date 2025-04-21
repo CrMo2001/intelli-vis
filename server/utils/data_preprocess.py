@@ -92,7 +92,8 @@ except Exception as e:
             channel_count = len(target_channels) if target_channels else 0
             generate_info.append(f"图表ID:{chart_id} 通道数:{channel_count}")
 
-        sheet_info = sheet_name if sheet_name else "0 (默认)"
+        sheet_name = sheet_name.strip().strip('"') if sheet_name else None
+        sheet_info = sheet_name if sheet_name else "0"
         logger.info(
             f"生成数据处理代码 - 工作表:{sheet_info}{' ' + ', '.join(generate_info) if generate_info else ''}"
         )
@@ -187,6 +188,8 @@ except Exception as e:
                 previous_code=previous_code,
                 previous_error=previous_error,
             )
+
+            logger.debug(f"代码生成结果: {code_result['code']}")
 
             # 检查是否生成代码时出错
             if "error" in code_result:

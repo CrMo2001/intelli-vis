@@ -1,7 +1,8 @@
 import os
 import json
 from pathlib import Path
-from typing import Dict, Any, List
+from enum import Enum, auto
+from typing import Dict, Any, List, Literal, Optional, Union
 from dotenv import load_dotenv
 import dspy
 from utils.logger import get_logger, log_dict
@@ -100,6 +101,13 @@ chart_configs = load_chart_configs()
 logger.info(f"共加载了 {len(chart_configs)} 个图表配置")
 
 
+# Define enum classes for type safety
+class QueryType(str, Enum):
+    VALUE = "value"  # For specific numerical/data value queries
+    VISUALIZATION = "visualization"  # For new visualization requests
+    REPLACE = "replace"  # For replacing an existing visualization
+    REPORT = "report"  # For report generation
+
 # Query Analysis Signature - For analyzing user queries about data or visualizations
 class QueryAnalysisSignature(dspy.Signature):
     """
@@ -113,17 +121,33 @@ class QueryAnalysisSignature(dspy.Signature):
     vis_template_candidate: List[Dict[str, Any]] = dspy.InputField(
         desc="List of visualization template candidates, each containing 'id', 'description', and 'channels' (list of dicts with 'name' and 'type')"
     )
+    
+    # New fields for handling VAST system state and chat history
+    vast_system_state: Optional[List[Dict[str, Any]]] = dspy.InputField(
+        desc="The current state of the VAST visualization system, including a list of existing visualizations with their IDs, types, titles, and bindings",
+        default=None
+    )
+    message_history: Optional[List[Dict[str, Any]]] = dspy.InputField(
+        desc="Previous conversation messages between the user and the system",
+        default=None
+    )
 
-    query_type: str = dspy.OutputField(
-        desc="Type of query: 'value' for specific numerical/data value queries, 'visualization' for visualization requests, 'report' for report generation"
+    query_type: Union[QueryType, Literal["value", "visualization", "replace", "report"]] = dspy.OutputField(
+        desc="Type of query: 'value' for specific numerical/data value queries, 'visualization' for new visualization requests, 'replace' for replacing an existing visualization, 'report' for report generation"
     )
 
     # Fields for visualization queries
     chart_id: str = dspy.OutputField(
-        desc="ID of the selected visualization template from vis_template_candidate. Only needed when query_type is 'visualization'"
+        desc="ID of the selected visualization template from vis_template_candidate. Only needed when query_type is 'visualization' or 'replace'. This is NOT the frontend visualization ID, but the template ID."
     )
     chart_title: str = dspy.OutputField(
-        desc="Title of the selected visualization template. Only needed when query_type is 'visualization'. Use Chinese for the title. Be short, ignoring unnecesary attributes."
+        desc="Title of the selected visualization template. Only needed when query_type is 'visualization' or 'replace'. Use Chinese for the title. Be short, ignoring unnecesary attributes."
+    )
+    
+    # New field for replacing existing visualizations
+    existing_visualization_id: Optional[str] = dspy.OutputField(
+        desc="ID of the existing visualization in the frontend to replace. If empty, a new visualization will be created. If not empty, the existing visualization with this ID will be replaced. This is different from chart_id which refers to the template ID.",
+        default=""
     )
 
     # Fields for report generation
