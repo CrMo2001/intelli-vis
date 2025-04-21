@@ -44,6 +44,8 @@ class EntryPoint:
         data_description: str,
         data_sample: str,
         code_template: str = None,
+        vast_system_state: List[Dict[str, Any]] = None,
+        message_history: List[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Process a user query by analyzing if it's a value query or visualization query,
@@ -55,6 +57,8 @@ class EntryPoint:
             data_description: Description of the dataset
             data_sample: Sample of the dataset (first few rows)
             code_template: Optional template for code generation
+            vast_system_state: The current state of the VAST visualization system
+            message_history: Previous conversation messages
 
         Returns:
             Dict containing processed data and appropriate metadata based on query type
@@ -66,7 +70,12 @@ class EntryPoint:
             )
 
             analysis_result = self.query_analyzer.analyze(
-                query, data_description, data_sample, self.chart_configs
+                query,
+                data_description,
+                data_sample,
+                self.chart_configs,
+                vast_system_state=vast_system_state,
+                message_history=message_history,
             )
 
             logger.info(f"查询分析结果: {analysis_result}")
@@ -79,7 +88,10 @@ class EntryPoint:
             # 获取查询类型
             query_type = analysis_result.get("query_type", "visualization")  # 默认为可视化
             sheet_name = analysis_result.get("sheet_name")
+            existing_visualization_id = analysis_result.get("existing_visualization_id", "")
             logger.info(f"查询类型: {query_type}, 使用工作表: {sheet_name}")
+            if existing_visualization_id:
+                logger.info(f"将替换前端可视化ID: {existing_visualization_id}")
 
             # 处理数值查询
             if query_type == "value":
@@ -116,12 +128,13 @@ class EntryPoint:
                 logger.info(f"数值查询完成 - 处理了 {len(processed_res['data'])} 条数据")
                 return result
 
-            elif query_type == "visualization":  # 处理可视化查询
-                # 获取图表信息
+            elif query_type == "visualization" or query_type == "replace":  # 处理可视化查询
                 chart_id = analysis_result.get("chart_id")
                 chart_title = analysis_result.get("chart_title", "")
 
-                # 查找匹配的图表配置
+                chart_id = chart_id.strip().strip('"')
+                chart_title = chart_title.strip().strip('"')
+
                 target_chart = next(
                     (config for config in self.chart_configs if config["id"] == chart_id), None
                 )
@@ -157,14 +170,17 @@ class EntryPoint:
                 # 准备返回结果
                 channel_mapping = processed_res.get("channel_mapping", {})
                 result = {
-                    "query_type": "visualization",
+                    "query_type": query_type,
                     "data": processed_res["data"],
                     "chart_id": chart_id,
                     "chart_title": chart_title,
                     "channel_mapping": channel_mapping,
                 }
 
-                # 记录结果信息
+                # 如果是替换请求，添加替换ID
+                if query_type == "replace" and existing_visualization_id:
+                    result["existing_visualization_id"] = existing_visualization_id
+
                 data_count = len(processed_res["data"])
                 logger.info(f"可视化查询完成 - 图表: {chart_id}, 处理了 {data_count} 条数据")
                 return result
