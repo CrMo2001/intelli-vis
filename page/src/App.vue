@@ -7,7 +7,7 @@ import { ref } from "vue";
 import { onMounted } from "vue";
 import ChartComponent, { type ChartBinding } from "./components/ChartComponent.vue";
 import HeaderComponent from "./components/HeaderComponent.vue";
-import { queryAPI, testQueryAPI } from "./api/query";
+import { downloadAPI, queryAPI, testQueryAPI } from "./api/query";
 import { LayoutController } from "./utils/layoutController";
 
 const userQuery = ref("");
@@ -43,6 +43,8 @@ function addChart(chart: Chart) {
     [charts.value[0], charts.value[newLength - 1]] = [charts.value[newLength - 1], charts.value[0]];
   }
   layoutController.value.updateVisCoords(charts.value.length);
+
+  console.log("charts", charts.value);
 }
 
 const isQuerying = ref(false);
@@ -76,12 +78,21 @@ function handleResponse(data: any) {
       content: "查询成功，图表已生成",
       sender: "assistant"
     });
-  } else {
-    const dataObj = data["data"][0];
-    const keyValues = Object.entries(dataObj).map(([key, value]) => {
-      return `${key}: ${value}`;
+  } else if (data["query_type"] == "report") {
+    const reportName = data["download_name"];
+    const reportUrl = data["report_path"];
+    downloadAPI(reportUrl, reportName);
+    dialogBox.value?.addMessage({
+      content: "已生成报告",
+      sender: "assistant"
     });
-    const content = keyValues.join("\n");
+  } else {
+    // const dataObj = data["data"][0];
+    // const keyValues = Object.entries(dataObj).map(([key, value]) => {
+    //   return `${key}: ${value}`;
+    // });
+    // const content = keyValues.join("\n");
+    const content = data.response;
     dialogBox.value?.addMessage({
       content: content,
       sender: "assistant"

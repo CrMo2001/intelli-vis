@@ -123,7 +123,7 @@ class QueryAnalysisSignature(dspy.Signature):
         desc="ID of the selected visualization template from vis_template_candidate. Only needed when query_type is 'visualization'"
     )
     chart_title: str = dspy.OutputField(
-        desc="Title of the selected visualization template. Only needed when query_type is 'visualization'"
+        desc="Title of the selected visualization template. Only needed when query_type is 'visualization'. Use Chinese for the title. Be short, ignoring unnecesary attributes."
     )
 
     # Fields for report generation

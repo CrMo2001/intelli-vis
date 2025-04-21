@@ -13,3 +13,4 @@ __pycache__/
 # temp files
 server/report/temp_images/
 server/report/output*
+tmp/
