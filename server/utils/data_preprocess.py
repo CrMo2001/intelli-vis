@@ -110,7 +110,7 @@ except Exception as e:
                 previous_code=previous_code,
                 previous_error=previous_error,
             )
-
+            # print(response)
             # if start with ```
             if response.pandas_code.startswith("```python\n"):
                 response.pandas_code = response.pandas_code[11:]
@@ -125,7 +125,6 @@ except Exception as e:
                     sheet_name if sheet_name else "0"
                 ),  # Default to first sheet if not specified
             )
-
             # 记录成功生成的代码
             mapping_count = len(response.channel_mapping) if response.channel_mapping else 0
             logger.info(f"生成代码成功 - 映射了 {mapping_count} 个通道")
@@ -249,7 +248,7 @@ except Exception as e:
             full_script = code
 
             # Create a temporary Python script with the generated code
-            with tempfile.NamedTemporaryFile(suffix=".py", mode="w", delete=False) as temp_file:
+            with tempfile.NamedTemporaryFile(suffix=".py", mode="w", delete=False, encoding="utf-8") as temp_file:
                 temp_file.write(full_script)
                 temp_file_path = temp_file.name
 

@@ -24,6 +24,7 @@ def query():
     try:
         # 获取用户查询
         data = request.get_json()
+        print(data)
         query = data.get("query")
         vast_system_state = data.get("vast_system_state")
         message_history = data.get("message_history")

@@ -3,7 +3,7 @@ import pandas as pd
 
 # 预定义数据路径和相关信息
 DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data/湖北_外部能耗数据.xlsx")
-
+print(DATA_PATH)
 # 预加载数据描述
 DATA_DESCRIPTION = """
 湖北_外部能耗数据表，其中有4个sheet，分别是：

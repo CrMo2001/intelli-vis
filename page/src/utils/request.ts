@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const service = axios.create({
   baseURL: '/api', // 使用相对路径，将通过Vite代理转发
-  timeout: 5000
+  // timeout: 5000
 })
 
 // 请求拦截器
