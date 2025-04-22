@@ -14,6 +14,263 @@ const testResponses = [
     "data": {
       "channel_mapping": {
         "category": "industry",
+        "value": "percentage"
+      },
+      "chart_id": "pie",
+      "chart_title": "湖北2006年企业能源消费占比",
+      "data": [
+        {
+          "industry": "专用设备制造业",
+          "percentage": 0.17,
+          "value": 13.92
+        },
+        {
+          "industry": "仪器仪表制造业",
+          "percentage": 0.05,
+          "value": 3.96
+        },
+        {
+          "industry": "其他制造业",
+          "percentage": 0.08,
+          "value": 6.95
+        },
+        {
+          "industry": "其他采矿业",
+          "percentage": 0,
+          "value": 0
+        },
+        {
+          "industry": "农副食品加工业",
+          "percentage": 0.69,
+          "value": 57.97
+        },
+        {
+          "industry": "化学原料和化学制品制造业",
+          "percentage": 18.74,
+          "value": 1566.15
+        },
+        {
+          "industry": "化学纤维制造业",
+          "percentage": 0,
+          "value": 0
+        },
+        {
+          "industry": "医药制造业",
+          "percentage": 1.21,
+          "value": 101.18
+        },
+        {
+          "industry": "印刷和记录媒介复制业",
+          "percentage": 0.16,
+          "value": 13.43
+        },
+        {
+          "industry": "家具制造业",
+          "percentage": 0.01,
+          "value": 1.08
+        },
+        {
+          "industry": "废弃资源综合利用业",
+          "percentage": 0.01,
+          "value": 0.65
+        },
+        {
+          "industry": "开采辅助活动",
+          "percentage": 0,
+          "value": 0
+        },
+        {
+          "industry": "有色金属冶炼和压延加工业",
+          "percentage": 1.82,
+          "value": 151.88
+        },
+        {
+          "industry": "有色金属矿采选业",
+          "percentage": 0.03,
+          "value": 2.17
+        },
+        {
+          "industry": "木材加工和木、竹、藤、棕、草制品业",
+          "percentage": 0.2,
+          "value": 16.33
+        },
+        {
+          "industry": "橡胶和塑料制品业",
+          "percentage": 0.32,
+          "value": 27.04
+        },
+        {
+          "industry": "水的生产和供应业",
+          "percentage": 0.08,
+          "value": 6.89
+        },
+        {
+          "industry": "汽车制造业",
+          "percentage": 0,
+          "value": 0
+        },
+        {
+          "industry": "烟草制品业",
+          "percentage": 0.1,
+          "value": 8.72
+        },
+        {
+          "industry": "煤炭开采和洗选业",
+          "percentage": 0.04,
+          "value": 3.3
+        },
+        {
+          "industry": "燃气生产和供应业",
+          "percentage": 0.52,
+          "value": 43.87
+        },
+        {
+          "industry": "电力、热力生产和供应业",
+          "percentage": 51.34,
+          "value": 4292.12
+        },
+        {
+          "industry": "电气机械及器材制造业",
+          "percentage": 0.26,
+          "value": 21.78
+        },
+        {
+          "industry": "皮革、毛皮、羽毛(绒)及其制品业",
+          "percentage": 0.02,
+          "value": 1.39
+        },
+        {
+          "industry": "皮革、毛皮、羽毛及其制品和制鞋业",
+          "percentage": 0,
+          "value": 0
+        },
+        {
+          "industry": "石油、煤炭及其他燃料加工业",
+          "percentage": 0.14,
+          "value": 11.39
+        },
+        {
+          "industry": "石油和天然气开采业",
+          "percentage": 0.31,
+          "value": 25.96
+        },
+        {
+          "industry": "纺织业",
+          "percentage": 1,
+          "value": 83.24
+        },
+        {
+          "industry": "纺织服装、服饰业",
+          "percentage": 0.16,
+          "value": 13.06
+        },
+        {
+          "industry": "计算机、通信和其他电子设备制造业",
+          "percentage": 0.09,
+          "value": 7.69
+        },
+        {
+          "industry": "通用设备制造业",
+          "percentage": 0.63,
+          "value": 52.95
+        },
+        {
+          "industry": "造纸和纸制品业",
+          "percentage": 1.62,
+          "value": 135.76
+        },
+        {
+          "industry": "酒、饮料和精制茶制造业",
+          "percentage": 0,
+          "value": 0
+        },
+        {
+          "industry": "金属制品、机械和设备修理业",
+          "percentage": 0,
+          "value": 0
+        },
+        {
+          "industry": "金属制品业",
+          "percentage": 0.16,
+          "value": 12.97
+        },
+        {
+          "industry": "铁路、船舶、航空航天和其他运输设备制造业",
+          "percentage": 0,
+          "value": 0
+        },
+        {
+          "industry": "非金属矿物制品业",
+          "percentage": 11.62,
+          "value": 971.78
+        },
+        {
+          "industry": "非金属矿采选业",
+          "percentage": 1.17,
+          "value": 97.57
+        },
+        {
+          "industry": "食品制造业",
+          "percentage": 1.05,
+          "value": 87.63
+        },
+        {
+          "industry": "黑色金属冶炼和压延加工业",
+          "percentage": 5.96,
+          "value": 498.29
+        },
+        {
+          "industry": "黑色金属矿采选业",
+          "percentage": 0.24,
+          "value": 20.35
+        }
+      ],
+      "query_type": "visualization"
+    },
+    "message": "分析成功"
+  },
+  {
+    "code": 200,
+    "data": {
+      "channel_mapping": {
+        "category": "industry",
+        "value": "percentage"
+      },
+      "chart_id": "pie",
+      "chart_title": "湖北2006年企业能源消费前五",
+      "data": [
+        {
+          "industry": "电力、热力生产和供应业",
+          "percentage": 57.3795957873
+        },
+        {
+          "industry": "化学原料和化学制品制造业",
+          "percentage": 20.9372184241
+        },
+        {
+          "industry": "非金属矿物制品业",
+          "percentage": 12.991329132
+        },
+        {
+          "industry": "黑色金属冶炼和压延加工业",
+          "percentage": 6.6614350915
+        },
+        {
+          "industry": "有色金属冶炼和压延加工业",
+          "percentage": 2.0304215651
+        }
+      ],
+      "existing_visualization_id": "chart-1",
+      "query_type": "replace"
+    },
+    "message": "分析成功"
+  },
+
+  {
+    "code": 200,
+    "data": {
+      "channel_mapping": {
+        "category": "industry",
         "value": "value"
       },
       "chart_id": "bar",

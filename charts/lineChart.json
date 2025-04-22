@@ -1,9 +1,9 @@
 {
   "id": "line",
-  "description": "TODO: finish the description for LLM",
+  "description": "for simple line chart, x is the horizontal coordinate, value is the vertical coordinate, and series is set to an empty string; for multi-line chart, x is the horizontal coordinate, value is the vertical coordinate, and series represents different lines",
   "channels": [
     {
-      "name": "category",
+      "name": "series",
       "type": "category"
     },{
       "name": "x",

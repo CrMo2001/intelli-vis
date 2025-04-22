@@ -33,23 +33,30 @@ function resizeChart() {
   }
 }
 
+function updateOption() {
+  console.log('updateOption', props.data, props.bindings)
+  if (!chart) return;
+  // console.log('chart', chart)
+  const chartTemplate = chartTemplates[props.template];
+  if (!chartTemplate) {
+    console.error(`Chart template ${props.template} not found`);
+    return;
+  }
+  const chartBuilder = chartBuilders[props.template];
+  if (!chartBuilder) {
+    console.error(`Chart builder for type ${props.template} not found`);
+    return;
+  }
+  const chartOption = chartBuilder.build(chartBuilder.option, props.data, props.bindings);
+  chart.setOption(chartOption, true);
+  console.log(chartOption);
+}
+
 onMounted(() => {
   const chartContainer = document.getElementById(props.id);
   if (chartContainer) {
     chart = echarts.init(chartContainer, "theme1");
-    const chartTemplate = chartTemplates[props.template];
-    if (!chartTemplate) {
-      console.error(`Chart template ${props.template} not found`);
-      return;
-    }
-    const chartBuilder = chartBuilders[props.template];
-    if (!chartBuilder) {
-      console.error(`Chart builder for type ${props.template} not found`);
-      return;
-    }
-    const chartOption = chartBuilder.build(chartBuilder.option, props.data, props.bindings);
-    chart.setOption(chartOption, true);
-    console.log(chartOption);
+    updateOption()
 
     const resizeObserver = new ResizeObserver(() => { resizeChart() })
     resizeObserver.observe(chartContainer)
@@ -61,6 +68,7 @@ onMounted(() => {
 
 defineExpose({
   resizeChart,
+  updateOption,
 })
 
 </script>

@@ -1,6 +1,7 @@
 import axios from 'axios'
 import request from '../utils/request'
 import { getTestResponse } from './testResponse'
+import type { ChartBinding } from '../components/ChartComponent.vue'
 
 export function test(data: { key: string }) {
   return request({
@@ -13,7 +14,21 @@ export function test(data: { key: string }) {
   })
 }
 
-export function queryAPI(data: { query: string }) {
+type QueryInput = {
+  query: string
+  vast_system_state: {
+    id: string,        // 前端可视化图的唯一标识符
+    type: string,      // 可视化图的类型
+    title: string,     // 可视化图的标题
+    bindings: ChartBinding[]     // 可视化图的格式
+  }[],
+  message_history: {
+    role: string,       // 消息角色（'user' 或 'system'）
+    content: string     // 消息内容
+  }[]
+}
+
+export function queryAPI(data: QueryInput) {
   return request({
     url: '/query',
     method: 'post',
@@ -48,7 +63,7 @@ export function downloadAPI(url: string, filename: string) {
   })
 }
 
-export function testQueryAPI(data: { query: string }) {
+export function testQueryAPI(data: QueryInput) {
   return new Promise<any>((resolve) => {
     setTimeout(() => {
       resolve(getTestResponse());

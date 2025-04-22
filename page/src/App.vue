@@ -26,7 +26,23 @@ type Chart = {
 let idCounter = 0;
 
 const charts = ref<Chart[]>([]);
+const chartComponents = ref<InstanceType<typeof ChartComponent>[]>([]);
 const layoutController = ref(new LayoutController());
+
+function setChartComponentRef(chartComponent: any, index: number) {
+  console.log("setChartComponentRef", chartComponent, index);
+  if (!chartComponent) {
+    return;
+  }
+  chartComponents.value[index] = chartComponent as InstanceType<typeof ChartComponent>;
+}
+
+type MessageLog = {
+  content: string;
+  role: string;
+};
+
+const messageLogs: MessageLog[] = [];
 
 function addChart(chart: Chart) {
   if (!chart) {
@@ -60,6 +76,14 @@ function getBinding(obj: any): ChartBinding[] {
   return bindings;
 }
 
+function toBindingObj(bindings: ChartBinding[]): any {
+  const obj: any = {};
+  bindings.forEach((binding) => {
+    obj[binding.name] = binding.field;
+  });
+  return obj;
+}
+
 function handleResponse(data: any) {
   if (data["query_type"] == "visualization") {
     const chartData = data["data"];
@@ -78,6 +102,10 @@ function handleResponse(data: any) {
       content: "查询成功，图表已生成",
       sender: "assistant"
     });
+    messageLogs.push({
+      content: `create chart ${chart.id}`,
+      role: "system"
+    });
   } else if (data["query_type"] == "report") {
     const reportName = data["download_name"];
     const reportUrl = data["report_path"];
@@ -86,7 +114,11 @@ function handleResponse(data: any) {
       content: "已生成报告",
       sender: "assistant"
     });
-  } else {
+    messageLogs.push({
+      content: `create report ${reportName}`,
+      role: "system"
+    });
+  } else if (data["query_type"] == "value") {
     // const dataObj = data["data"][0];
     // const keyValues = Object.entries(dataObj).map(([key, value]) => {
     //   return `${key}: ${value}`;
@@ -96,6 +128,73 @@ function handleResponse(data: any) {
     dialogBox.value?.addMessage({
       content: content,
       sender: "assistant"
+    });
+    messageLogs.push({
+      content: content,
+      role: "assistant"
+    });
+  } else if (data["query_type"] == "replace") {
+    const chartId = data["existing_visualization_id"];
+    const chartData = data["data"];
+    const templateId = data["chart_id"];
+    const bindings = getBinding(data["channel_mapping"]);
+    const newChart = {
+      id: chartId,
+      template: templateId,
+      data: chartData,
+      bindings: bindings,
+      title: data["chart_title"] || `图表 ${idCounter + 1}`
+    };
+    // find the chart by id
+    const index = charts.value.findIndex((chart) => chart.id === chartId);
+    if (index == -1) {
+      console.error("Chart not found:", chartId);
+      // add new chart instead
+      addChart(newChart);
+      dialogBox.value?.addMessage({
+        content: "查询成功，图表已生成",
+        sender: "assistant"
+      });
+      messageLogs.push({
+        content: `create chart ${newChart.id}`,
+        role: "system"
+      });
+      return;
+    }
+    // replace the chart data
+    charts.value[index] = newChart;
+    // charts.value[index].data = newChart.data;
+    // charts.value[index].template = newChart.template;
+    // charts.value[index].bindings = newChart.bindings;
+    // charts.value[index].title = newChart.title;
+    console.log("charts", charts.value);
+
+    dialogBox.value?.addMessage({
+      content: "查询成功，图表已更新",
+      sender: "assistant"
+    });
+    messageLogs.push({
+      content: `update chart ${newChart.id}`,
+      role: "system"
+    });
+    // update the chart component
+    const chartComponent = chartComponents.value[index];
+    if (chartComponent) {
+      setTimeout(() => {
+        chartComponent.updateOption();
+      }, 0);
+    } else {
+      console.error("Chart component ref not found:", chartId);
+    }
+  } else {
+    console.error("Unknown query type:", data["query_type"]);
+    dialogBox.value?.addMessage({
+      content: "查询失败，请稍后再试",
+      sender: "assistant"
+    });
+    messageLogs.push({
+      content: "未知的查询类型",
+      role: "assistant"
     });
   }
 }
@@ -115,10 +214,25 @@ function query() {
     content: userQuery.value,
     sender: "user"
   });
+  messageLogs.push({
+    content: userQuery.value,
+    role: "user"
+  });
   dialogBox.value.setLoading(true);
   isQuerying.value = true;
 
-  queryAPI({ query: userQuery.value })
+  queryAPI({
+    query: userQuery.value,
+    vast_system_state: charts.value.map((chart) => {
+      return {
+        id: chart.id,
+        type: chart.template,
+        title: chart.title,
+        bindings: toBindingObj(chart.bindings),
+      };
+    }),
+    message_history: messageLogs
+  })
     .then((res: any) => {
       console.log(res);
       if (res.code == 200) {
@@ -257,7 +371,8 @@ function stopMoving() {
               // bottom: layoutController.visCoords[index].bottom
             }">
             <ChartComponent :id="chart.id" :key="chart.id" :template="chart.template" :data="chart.data"
-              :bindings="chart.bindings" :title="chart.title" @chart-move="(e) => startMoving(index, e)" />
+              :ref="(el) => setChartComponentRef(el, index)" :bindings="chart.bindings" :title="chart.title"
+              @chart-move="(e) => startMoving(index, e)" />
           </div>
         </transition-group>
       </div>

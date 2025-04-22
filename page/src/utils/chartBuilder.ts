@@ -44,6 +44,7 @@ function findRequiredFields(requiredFields: string[], bindings: ChartBinding[]) 
 export const chartBuilders: Record<string, ChartBuilder> = {
   bar: {
     option: {
+      legend: { "data": ["Direct", "Email", "Union Ads", "Video Ads", "Search"] },
       tooltip: { "trigger": "axis", "axisPointer": { "type": "shadow" } },
       grid: { "left": "3%", "right": "4%", "bottom": "3%", "containLabel": true },
       xAxis: [
@@ -60,13 +61,45 @@ export const chartBuilders: Record<string, ChartBuilder> = {
     build: (option: any, data: any[], bindings: ChartBinding[]) => {
       const result = JSON.parse(JSON.stringify(option));
 
-      const requiredFields = ["category", "value"];
-      const [category, value] = findRequiredFields(requiredFields, bindings);
+      const requiredFields = ["group", "x", "value"];
+      const [group, x, value] = findRequiredFields(requiredFields, bindings);
       // category
-      result.xAxis[0].data = getDataColumn(data, category);
+      // result.xAxis[0].data = getDataColumn(data, category);
       // value
-      result.series[0].data = getDataColumn(data, value);
-      result.series[0].name = value;
+      // result.series[0].data = getDataColumn(data, value);
+      // result.series[0].name = value;
+
+      let firstData = data;
+
+      if(!group || group == x) {
+        if (group == x) {
+          console.warn("category and x are the same")
+        }
+        const series = [{
+          name: value,
+          type: "bar",
+          barWidth: "60%",
+          data: getDataColumn(data, value)
+        }]
+        result.series = series;
+        delete result.legend;
+      } else {
+        const groupedData = groupBy(data, group);
+        const series = Object.keys(groupedData).map((key) => {
+          return {
+            name: key,
+            type: "bar",
+            // barWidth: "60%",
+            data: getDataColumn(groupedData[key], value)
+          };
+        });
+        result.series = series;
+        firstData = groupedData[Object.keys(groupedData)[0]];
+        // result.legend.data = Object.keys(groupedData);
+        result.legend.data = groupedData.keys;
+      }
+      result.xAxis[0].data = getDataColumn(firstData, x)
+      result.xAxis[0].name = x;
 
       return result;
     }
@@ -89,27 +122,44 @@ export const chartBuilders: Record<string, ChartBuilder> = {
     build: (option: any, data: any[], bindings: ChartBinding[]) => {
       const result = JSON.parse(JSON.stringify(option));
 
-      const requiredFields = ["category", "x", "value"];
-      const [category, x, value] = findRequiredFields(requiredFields, bindings);
+      const requiredFields = ["series", "x", "value"];
+      const [group, x, value] = findRequiredFields(requiredFields, bindings);
 
-      const groupedData = groupBy(data, category);
-      const series = Object.keys(groupedData).map((key) => {
-        return {
-          name: key,
+      let firstData = data;
+      if (!group || group == x) {
+        if (group == x) {
+          console.warn("group and x are the same")
+        }
+        const series = [{
+          name: value,
           type: "line",
-          data: getDataColumn(groupedData[key], value)
-        };
-      });
-      result.series = series;
+          data: getDataColumn(data, value)
+        }]
+        result.series = series;
+        delete result.legend;
+      } else {
+        const groupedData = groupBy(data, group);
+        const series = Object.keys(groupedData).map((key) => {
+          return {
+            name: key,
+            type: "line",
+            data: getDataColumn(groupedData[key], value)
+          };
+        });
+        result.series = series;
+        firstData = groupedData[Object.keys(groupedData)[0]];
+        console.log(result.legend, "legend")
+        result.legend.data = Object.keys(groupedData);
+      }
 
-      const firstData = groupedData[Object.keys(groupedData)[0]];
-      result.xAxis.data = getDataColumn(firstData, x).map((item) => {
-        const date = new Date(item);
-        return date.toLocaleDateString(); // Format the date as needed
-      });
+      result.xAxis.data = getDataColumn(firstData, x)
+      if (result.xAxis.data.every((item: any) => typeof item === "number" && item > 1e10)) {
+        result.xAxis.data = result.xAxis.data.map((item: any) => {
+          const date = new Date(item);
+          return date.toLocaleDateString(); // Format the date as needed
+        });
+      }
       result.xAxis.name = x;
-
-      result.legend.data = groupedData.keys;
 
       return result;
     }

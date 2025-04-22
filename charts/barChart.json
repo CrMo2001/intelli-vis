@@ -1,9 +1,13 @@
 {
   "id": "bar",
-  "description": "TODO: finish the description for LLM",
+  "description": "for simple bar chart, x is the horizontal coordinate, value is the height, and group is set to an empty string; for grouped bar chart, x is the horizontal coordinate, value is the height, and group represents the grouping variable",
   "channels": [
     {
-      "name": "category",
+      "name": "group",
+      "type": "category"
+    },
+    {
+      "name": "x",
       "type": "category"
     },
     {
