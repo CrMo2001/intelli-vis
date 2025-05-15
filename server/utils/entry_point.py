@@ -14,7 +14,7 @@ import time
 import pandas as pd
 from pathlib import Path
 from typing import Dict, Any, List
-from report.stat_func import get_docx_placeholder_replacement_values, replace_docx_placeholders
+from report.stat_func import get_docx_placeholder_replacement_values, replace_markdown_placeholders
 
 # 获取该模块的日志器
 logger = get_logger("entry_point")
@@ -192,13 +192,15 @@ class EntryPoint:
 
                 # 确保年份是整数
                 try:
+                    if year.startswith('"') and year.endswith('"'):
+                        year = year[1:-1]
                     year = int(year)
                 except ValueError:
                     logger.error(f"无效的年份格式: {year}")
                     return {"error": f"无效的年份格式: {year}"}
 
                 # 生成报告
-                report_path = self.generate_report(data_path, province, year)
+                report_path, markdown_content = self.generate_report(data_path, province, year)
 
                 # 检查报告生成结果
                 if not report_path or not os.path.exists(report_path):
@@ -211,6 +213,7 @@ class EntryPoint:
                     "report_path": report_path,
                     "province": province,
                     "year": str(year),
+                    "markdown_content": markdown_content,
                 }
 
                 logger.info(f"报告生成完成: {report_path}")
@@ -224,7 +227,7 @@ class EntryPoint:
             logger.debug(traceback.format_exc())
             return {"error": f"Error processing query: {error_msg}"}
 
-    def generate_report(self, data_path: str, province: str, year: int) -> str:
+    def generate_report(self, data_path: str, province: str, year: int) -> tuple[str, str]:
         try:
             # 记录开始时间
             start_time = time.time()
@@ -251,13 +254,13 @@ class EntryPoint:
             )
 
             # 生成报告
-            output_path = replace_docx_placeholders(replacement_values)
+            output_path, markdown_content = replace_markdown_placeholders(replacement_values)
 
             # 记录完成时间
             generation_time = time.time() - start_time
             logger.info(f"报告生成完成，耗时: {generation_time:.2f}秒, 路径: {output_path}")
 
-            return output_path
+            return output_path, markdown_content
 
         except Exception as e:
             logger.error(f"生成报告时出错: {str(e)}")

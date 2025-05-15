@@ -64,8 +64,9 @@ def query():
                     "message": "报告生成成功",
                     "data": {
                         "query_type": "report",
-                        "report_path": path,
-                        "download_name": f"{result.get('province', '湖北')}_{result.get('year', '2022')}年能源消费分析报告.docx",
+                        # "report_path": path,
+                        # "download_name": f"{result.get('province', '湖北')}_{result.get('year', '2022')}年能源消费分析报告.docx",
+                        "markdown_content": result.get("markdown_content", "")
                     },
                 }
             )
