@@ -133,7 +133,7 @@ class QueryAnalysisSignature(dspy.Signature):
     )
 
     query_type: Union[QueryType, Literal["value", "visualization", "replace", "report"]] = dspy.OutputField(
-        desc="Type of query: 'value' for specific numerical/data value queries, 'visualization' for new visualization requests, 'replace' for replacing an existing visualization, 'report' for report generation"
+        desc="Type of query: 'value' for specific numerical/data value queries, 'visualization' for new visualization requests, 'replace' for replacing an existing visualization, 'report' for report generation. Only replace the chart when user explicitly asks for it, otherwise create a new one."
     )
 
     # Fields for visualization queries
