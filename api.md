@@ -100,5 +100,12 @@
 ### 报告生成
 
 ```
-// 返回文件下载，不返回JSON
+{
+  code: number,
+  message: string,
+  data: {
+    query_type: "report",
+    markdown_content: string
+  }
+}
 ```

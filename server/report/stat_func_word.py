@@ -1,22 +1,18 @@
 import pandas as pd
 import numpy as np
-import matplotlib
-# Set the backend to Agg for non-interactive environments
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import platform
 from pathlib import Path
 import os
-import multiprocessing as mp
 
 # 获取当前模块所在目录
 MODULE_DIR = Path(__file__).parent
 
 # 默认路径配置
 DEFAULT_PATHS = {
-    "template": MODULE_DIR / "template.md",
-    "output": MODULE_DIR / "output.md",
+    "template": MODULE_DIR / "template1.docx",
+    "output": MODULE_DIR / "output1.docx",
     "temp_images": MODULE_DIR / "temp_images",
 }
 
@@ -510,44 +506,6 @@ def plot_energy_intensity(
     return fig
 
 
-# 多进程生成单个图表的函数
-def generate_chart(args):
-    # 解包参数
-    chart_type, chart_params, output_path = args
-    
-    # 确保在子进程中使用Agg后端
-    import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-    
-    try:
-        if chart_type == 'energy_consumption':
-            df, energy_type, title, figsize, baseline_year = chart_params
-            fig = plot_energy_consumption(df, energy_type, title, figsize, baseline_year)
-        elif chart_type == 'energy_intensity':
-            gdp_df, energy_df, title, figsize, baseline_year = chart_params
-            fig = plot_energy_intensity(gdp_df, energy_df, title, figsize, baseline_year)
-        elif chart_type == 'industry_pie':
-            df, year, title, figsize = chart_params
-            fig = plot_industry_energy_pie(df, year, title=title, figsize=figsize)
-        elif chart_type == 'industry_trends':
-            df, start_year, end_year, title, figsize, colormap = chart_params
-            fig = plot_industry_energy_trends(
-                df, start_year=start_year, end_year=end_year, 
-                title=title, figsize=figsize, colormap=colormap
-            )
-        else:
-            return None
-        
-        # 保存图表
-        fig.savefig(output_path, dpi=300, bbox_inches="tight")
-        plt.close(fig)
-        return output_path
-    except Exception as e:
-        print(f"生成图表时出错: {e}")
-        return None
-
-
 def get_docx_placeholder_replacement_values(
     datas: list[pd.DataFrame], year: int, province: str, temp_dir=None
 ):
@@ -642,67 +600,68 @@ def get_docx_placeholder_replacement_values(
     else:
         res["choices"].append("下降")  # choices4
 
-    # 使用多进程生成可视化图表
-    print("开始多进程生成可视化图表...")
-    
-    # 准备图表生成任务
-    chart_tasks = [
-        # 图1: 能源消费量图表
-        ('energy_consumption', (
-            df1, 
-            "其他能源", 
-            f"{province}{year}年能源消费量年度变化", 
-            (10, 6), 
-            2020
-        ), os.path.join(temp_dir, "energy_consumption.png")),
-        
-        # 图2: 能源强度图表
-        ('energy_intensity', (
-            df4, 
-            df2, 
-            f"{province}{year}年能源强度年度变化", 
-            (10, 6), 
-            2020
-        ), os.path.join(temp_dir, "energy_intensity.png")),
-        
-        # 图3: 行业能源消费占比饼图
-        ('industry_pie', (
-            df2, 
-            year, 
-            f"{province}{year}年各行业能源消费占比", 
-            (8, 8)
-        ), os.path.join(temp_dir, "industry_pie.png")),
-        
-        # 图4: 行业能源消费趋势图
-        ('industry_trends', (
-            df2, 
-            2020, 
-            year, 
-            f"{province}2020至{year}年各行业能源消费趋势", 
-            (12, 8), 
-            "Pastel1"
-        ), os.path.join(temp_dir, "industry_trends.png"))
-    ]
-    
-    # 使用进程池并行处理图表生成
-    with mp.Pool(processes=min(mp.cpu_count(), len(chart_tasks))) as pool:
-        results = pool.map(generate_chart, chart_tasks)
-    
-    # 过滤掉失败的结果，只保留成功生成的图表路径
-    successful_paths = [path for path in results if path is not None]
-    res["image_paths"].extend(successful_paths)
-    
-    print(f"已生成 {len(res['image_paths'])} 张图表用于报告")
-    print(res)
+    # 生成并保存图表
+    # df1, df2, df3, df4 = datas
+
+    # # 图1: 能源消费量图表
+    # fig1 = plot_energy_consumption(
+    #     df1,
+    #     "其他能源",
+    #     title=f"{province}{year}年能源消费量年度变化",
+    #     figsize=(10, 6),
+    #     baseline_year=2020,
+    # )
+    # img_path1 = os.path.join(temp_dir, "energy_consumption.png")
+    # fig1.savefig(img_path1, dpi=300, bbox_inches="tight")
+    # plt.close(fig1)
+    # res["image_paths"].append(img_path1)
+
+    # # 图2: 能源强度图表
+    # fig2 = plot_energy_intensity(
+    #     df4, df2, title=f"{province}{year}年能源强度年度变化", figsize=(10, 6), baseline_year=2020
+    # )
+    # img_path2 = os.path.join(temp_dir, "energy_intensity.png")
+    # fig2.savefig(img_path2, dpi=300, bbox_inches="tight")
+    # plt.close(fig2)
+    # res["image_paths"].append(img_path2)
+
+    # 图3: 行业能源消费占比饼图
+    # fig3 = plot_industry_energy_pie(
+    #     df2, year=year, title=f"{province}{year}年各行业能源消费占比", figsize=(8, 8)
+    # )
+    # img_path3 = os.path.join(temp_dir, "industry_pie.png")
+    # fig3.savefig(img_path3, dpi=300, bbox_inches="tight")
+    # plt.close(fig3)
+    # res["image_paths"].append(img_path3)
+
+    # # 图4: 行业能源消费趋势图
+    # fig4 = plot_industry_energy_trends(
+    #     df2,
+    #     start_year=2020,
+    #     end_year=year,
+    #     title=f"{province}2020至{year}年各行业能源消费趋势",
+    #     figsize=(12, 8),
+    #     colormap="Pastel1",
+    # )
+    # img_path4 = os.path.join(temp_dir, "industry_trends.png")
+    # fig4.savefig(img_path4, dpi=300, bbox_inches="tight")
+    # plt.close(fig4)
+    # res["image_paths"].append(img_path4)
+
+    # print(f"已生成 {len(res['image_paths'])} 张图表用于报告")
+
+    # print(res)
 
     return res
 
 
+from docx import Document
+from docx.shared import Inches, Pt
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 import os
 import re
 import openai
 import concurrent.futures
-import base64
 from typing import List, Tuple, Dict, Any
 
 
@@ -759,9 +718,9 @@ def generate_abstract_with_llm(full_text, year, province):
     return generate_text_with_llm(full_text, prompt, max_tokens=500, temperature=0.5)
 
 
-def replace_markdown_placeholders(
+def replace_docx_placeholders(
     replacement_values: dict[str, any], template_path=None, output_path=None
-) -> Tuple[Path, str]:
+):
     # 使用默认路径或自定义路径
     if template_path is None:
         template_path = DEFAULT_PATHS["template"]
@@ -772,39 +731,53 @@ def replace_markdown_placeholders(
     template_path = Path(template_path)
     output_path = Path(output_path)
 
-    print(f"处理Markdown文档: {template_path}")
-
-    # 读取模板文件内容
-    with open(template_path, "r", encoding="utf-8") as file:
-        markdown_content = file.read()
+    print(f"处理Word文档: {template_path}")
+    doc = Document(str(template_path))
 
     if "image_paths" in replacement_values:
         print(f"准备插入{len(replacement_values['image_paths'])}张图片")
 
-    # 替换年份和省份
-    markdown_content = markdown_content.replace(
-        "<placeholder_year>", str(replacement_values["year"])
-    )
-    markdown_content = markdown_content.replace(
-        "<placeholder_prev_year>", str(replacement_values["year"] - 1)
-    )
-    markdown_content = markdown_content.replace(
-        "<placeholder_province>", replacement_values["province"]
-    )
+    # 替换基本占位符
+    for paragraph in doc.paragraphs:
+        # 替换年份和省份
+        if "<placeholder_year>" in paragraph.text:
+            paragraph.text = paragraph.text.replace(
+                "<placeholder_year>", str(replacement_values["year"])
+            )
+        if "<placeholder_prev_year>" in paragraph.text:
+            paragraph.text = paragraph.text.replace(
+                "<placeholder_prev_year>", str(replacement_values["year"] - 1)
+            )
+        if "<placeholder_province>" in paragraph.text:
+            paragraph.text = paragraph.text.replace(
+                "<placeholder_province>", replacement_values["province"]
+            )
 
-    # 替换数值
-    for i, value in enumerate(replacement_values["values"]):
-        markdown_content = markdown_content.replace(
-            f"<placeholder_val{i+1}>", "{:.2f}".format(value)
-        )
+        # 替换数值
+        for i, value in enumerate(replacement_values["values"]):
+            if f"<placeholder_val{i+1}>" in paragraph.text:
+                # 保留两位小数
+                paragraph.text = paragraph.text.replace(
+                    f"<placeholder_val{i+1}>", "{:.2f}".format(value)
+                )
 
-    # 替换选择项
-    for i, choice in enumerate(replacement_values["choices"]):
-        markdown_content = markdown_content.replace(f"<placeholder_choices{i+1}>", str(choice))
+        # 替换选择项
+        for i, choice in enumerate(replacement_values["choices"]):
+            if f"<placeholder_choices{i+1}>" in paragraph.text:
+                paragraph.text = paragraph.text.replace(f"<placeholder_choices{i+1}>", str(choice))
 
-    # 替换行业名称
-    for i, industry in enumerate(replacement_values.get("industries", [])):
-        markdown_content = markdown_content.replace(f"<placeholder_industry{i+1}>", str(industry))
+        # 替换行业名称
+        for i, industry in enumerate(replacement_values.get("industries", [])):
+            if f"<placeholder_industry{i+1}>" in paragraph.text:
+                paragraph.text = paragraph.text.replace(
+                    f"<placeholder_industry{i+1}>", str(industry)
+                )
+        # 替换图像
+        # for i, img_path in enumerate(replacement_values.get("image_paths", [])):
+        #     placeholder = f"<placeholder_img{i+1}>"
+        #     if placeholder in paragraph.text:
+        #         print(f"处理图片 {i+1}: {placeholder} 在段落: '{paragraph.text[:30]}...'")
+        #         replace_placeholder_with_img(paragraph, placeholder, img_path)
 
     # 处理总结占位符 - 在所有其他占位符替换后执行
     conclusion_placeholder_pattern = r"<placeholder[^>]*conclusion[^>]*>"
@@ -812,33 +785,23 @@ def replace_markdown_placeholders(
     print("开始处理段落总结...")
     year = replacement_values["year"]
 
-    # 查找所有总结占位符
-    conclusion_matches = list(re.finditer(conclusion_placeholder_pattern, markdown_content))
+    # 使用多线程并发处理所有总结生成任务
+    # 步骤1: 收集所有需要处理的段落和上下文
     conclusion_tasks = []
+    for i, paragraph in enumerate(doc.paragraphs):
+        if re.search(conclusion_placeholder_pattern, paragraph.text):
+            original_text = paragraph.text
+            print(f"找到总结占位符: '{original_text[:50]}...'")
 
-    # 为每个匹配的占位符收集上下文
-    for i, match in enumerate(conclusion_matches):
-        # 找到占位符所在的段落
-        start_pos = markdown_content.rfind("\n\n", 0, match.start()) + 2
-        if start_pos < 2:  # 如果没有找到\n\n，可能是文档开头
-            start_pos = 0
+            # 提取上下文
+            context = re.sub(conclusion_placeholder_pattern, "", original_text).strip()
 
-        end_pos = markdown_content.find("\n\n", match.end())
-        if end_pos == -1:  # 如果没有找到\n\n，可能是文档结尾
-            end_pos = len(markdown_content)
-
-        paragraph_text = markdown_content[start_pos:end_pos]
-        print(f"找到总结占位符: '{paragraph_text[:50]}...'")
-
-        # 提取上下文（移除占位符）
-        context = re.sub(conclusion_placeholder_pattern, "", paragraph_text).strip()
-
-        # 将任务添加到列表
-        conclusion_tasks.append((i, match, context))
+            # 将任务添加到列表
+            conclusion_tasks.append((i, paragraph, context))
 
     # 定义处理单个总结的函数
     def process_conclusion(task_tuple):
-        idx, match, ctx = task_tuple
+        idx, para, ctx = task_tuple
         if ctx.strip():
             # 有内容，生成总结
             print(f"处理总结任务 {idx+1}/{len(conclusion_tasks)}: 使用段落内容生成")
@@ -847,10 +810,9 @@ def replace_markdown_placeholders(
             # 无内容，使用默认总结
             print(f"处理总结任务 {idx+1}/{len(conclusion_tasks)}: 使用默认总结")
             conclusion = f"{year}年能耗数据分析显示能源消费和强度指标有所变化，各行业能源结构存在差异。需要继续关注节能降耗和能源转型发展。"
-        return idx, match, conclusion
+        return idx, para, conclusion
 
-    # 使用线程池并发处理所有总结生成任务
-    replacements_to_make = []
+    # 步骤2: 使用线程池并发处理所有总结生成任务
     if conclusion_tasks:
         print(f"并发处理 {len(conclusion_tasks)} 个总结生成任务...")
         with concurrent.futures.ThreadPoolExecutor(
@@ -859,67 +821,46 @@ def replace_markdown_placeholders(
             # 提交所有任务并等待完成
             futures = {executor.submit(process_conclusion, task): task for task in conclusion_tasks}
 
-            # 收集处理结果
+            # 处理结果并替换段落内容
             for future in concurrent.futures.as_completed(futures):
-                idx, match, conclusion = future.result()
+                idx, para, conclusion = future.result()
                 print(f"完成总结任务 {idx+1}/{len(conclusion_tasks)}: {conclusion[:50]}...")
-                # 保存替换信息
-                replacements_to_make.append((match.span(), conclusion))
+                # 替换占位符
+                para.text = re.sub(conclusion_placeholder_pattern, conclusion, para.text)
     else:
         print("没有找到需要生成总结的段落")
 
-    # 应用替换（从后向前，以避免位置偏移）
-    replacements_to_make.sort(key=lambda x: x[0][0], reverse=True)
-    for (start, end), conclusion in replacements_to_make:
-        markdown_content = markdown_content[:start] + conclusion + markdown_content[end:]
-
-    # 处理摘要占位符
+    # 在处理完所有占位符后，生成文档摘要
     abstract_placeholder = "<placeholder_abstract>"
-    if abstract_placeholder in markdown_content:
-        print("开始生成文档摘要...")
-        # 生成摘要
-        province = replacement_values["province"]
-        abstract = generate_abstract_with_llm(markdown_content, year, province)
-        print(f"摘要生成成功: {abstract[:50]}...")
 
-        # 替换占位符
-        markdown_content = markdown_content.replace(abstract_placeholder, abstract)
+    # 收集文档的全部内容
+    print("开始生成文档摘要...")
+    full_text = ""
+    for para in doc.paragraphs:
+        if para.text.strip():
+            full_text += para.text + "\n\n"
 
-    # 替换图像 - 将图片以base64编码直接嵌入到Markdown中,放到最后防止被 llm 读取占用 context 空间
-    for i, img_path in enumerate(replacement_values.get("image_paths", [])):
-        placeholder = f"<placeholder_img{i+1}>"
-        if placeholder in markdown_content:
-            print(f"处理图片 {i+1}: {placeholder}")
-            # 将图片转换为base64并嵌入到markdown中
-            try:
-                # 读取图片文件
-                with open(img_path, "rb") as img_file:
-                    img_data = img_file.read()
-                    # 编码为base64
-                    img_base64 = base64.b64encode(img_data).decode("utf-8")
-                    # 获取文件扩展名以确定MIME类型
-                    file_ext = os.path.splitext(img_path)[1].lower()[1:]
-                    if file_ext == "jpg":
-                        file_ext = "jpeg"
-                    # 创建markdown格式的base64图片
-                    img_markdown = f"![图片{i+1}](data:image/{file_ext};base64,{img_base64})"
-                    # 替换占位符
-                    markdown_content = markdown_content.replace(placeholder, img_markdown)
-                    print(f"图片 {i+1} 已成功嵌入为base64")
-            except Exception as e:
-                print(f"嵌入图片 {i+1} 时出错: {e}")
-                # 如果出错，使用普通链接
-                img_markdown = f"![图片{i+1}]({img_path})"
-                markdown_content = markdown_content.replace(placeholder, img_markdown)
+    # 查找摘要占位符
+    for paragraph in doc.paragraphs:
+        if abstract_placeholder in paragraph.text:
+            print(f"找到摘要占位符，生成文档摘要")
+
+            # 生成摘要
+            province = replacement_values["province"]
+            abstract = generate_abstract_with_llm(full_text, year, province)
+            print(f"摘要生成成功: {abstract[:50]}...")
+
+            # 替换占位符
+            paragraph.text = paragraph.text.replace(abstract_placeholder, abstract)
+            break
 
     # 保存文档
     output_path.parent.mkdir(parents=True, exist_ok=True)  # 确保输出目录存在
-    with open(output_path, "w", encoding="utf-8") as file:
-        file.write(markdown_content)
+    doc.save(str(output_path))
     print(f"报告已生成: {output_path}")
 
     # 返回输出文件路径
-    return output_path, markdown_content
+    return output_path
 
 
 if __name__ == "__main__":
@@ -956,4 +897,4 @@ if __name__ == "__main__":
     replacement_values = get_docx_placeholder_replacement_values(
         [df1, df2, df3, df4], year=2022, province="湖北"
     )
-    replace_markdown_placeholders(replacement_values)
+    replace_docx_placeholders(replacement_values)
