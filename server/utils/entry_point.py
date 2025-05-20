@@ -192,6 +192,7 @@ class EntryPoint:
 
                 # 确保年份是整数
                 try:
+                    print("year:", year)
                     if year.startswith('"') and year.endswith('"'):
                         year = year[1:-1]
                     year = int(year)

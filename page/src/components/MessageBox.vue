@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ElIcon, ElText } from 'element-plus'
-import { Loading } from '@element-plus/icons-vue'
+import { Loading, View } from '@element-plus/icons-vue'
 import { nextTick, onMounted, ref } from 'vue'
 
 type Message = {
   content: string;
   sender: "user" | "assistant";
+  attachment: string | null;
 }
 
 const messages = ref<Message[]>([])
@@ -37,12 +38,26 @@ defineExpose({
   setLoading,
 })
 
+const emits = defineEmits<{
+  (e: 'openAttachment', content: string): void;
+}>()
+
 </script>
 
 <template>
   <div class="message-content" ref="messageContainer">
     <div v-for="(message, index) in messages" :key="index" :class="['message', 'message-' + message.sender]">
-      <div class="message-content">{{ message.content }}</div>
+      <div class="message-content">{{ message.content }}
+        <div v-if="message.attachment != null" class="message-attachment">
+          <!-- link to view the attachement -->
+          <button class="message-attachment-button" @click="() => emits('openAttachment', message.attachment!)">
+            <el-icon style="margin-right: 0.5vh;">
+              <View />
+            </el-icon>
+            <span>查看附件</span>
+          </button>
+        </div>
+      </div>
     </div>
     <div class="loading-container" v-if="isLoading">
       <div>正在生成回复...</div>
@@ -81,6 +96,30 @@ defineExpose({
 .message-assistant {
   background-color: var(--color-light);
   color: var(--color-dark);
+}
+
+.message-attachment {
+  margin-top: 1vh;
+  font-size: 1.5vh;
+}
+
+.message-attachment-button {
+  padding: 0.5vh 1.5vh;
+  height: 100%;
+  border-radius: 1vh;
+
+  background-color: transparent;
+  color: var(--color-dark);
+  border: 1.5px solid var(--color-dark);
+  font-size: 1.5vh;
+  font-weight: bold;
+
+  transition: all 0.3s ease;
+}
+
+.message-attachment-button:hover {
+  background-color: var(--color-dark);
+  color: var(--color-light);
 }
 
 .loading-container {

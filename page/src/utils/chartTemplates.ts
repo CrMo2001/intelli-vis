@@ -3,7 +3,7 @@ import pieChartTemplate from "../../../charts/pieChart.json" assert { type: "jso
 import lineChartTemplate from "../../../charts/lineChart.json" assert { type: "json" };
 import scatterChartTemplate from "../../../charts/scatterPlot.json" assert { type: "json" };
 import radarChartTemplate from "../../../charts/radarChart.json" assert { type: "json" };
-import geoMapTemplate from "../../../charts/geoMap.json" assert { type: "json" };
+// import geoMapTemplate from "../../../charts/geoMap.json" assert { type: "json" };
 // export type ChannelInstance = {
 //   type: string;
 //   url: (string | number)[];
@@ -28,5 +28,5 @@ export const chartTemplates: Record<string, ChartTemplate> = {
   line: lineChartTemplate satisfies ChartTemplate,
   scatter: scatterChartTemplate satisfies ChartTemplate,
   radar: radarChartTemplate satisfies ChartTemplate,
-  geo: geoMapTemplate satisfies ChartTemplate,
+  // geo: geoMapTemplate satisfies ChartTemplate,
 }

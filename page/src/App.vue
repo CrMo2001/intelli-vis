@@ -9,9 +9,12 @@ import ChartComponent, { type ChartBinding } from "./components/ChartComponent.v
 import HeaderComponent from "./components/HeaderComponent.vue";
 import { downloadAPI, queryAPI, testQueryAPI } from "./api/query";
 import { LayoutController } from "./utils/layoutController";
+import ReportViewer from "./components/ReportViewer.vue";
 
 const userQuery = ref("");
 const dialogBox = ref<InstanceType<typeof DialogBox> | null>(null);
+const reportViewer = ref<InstanceType<typeof ReportViewer> | null>(null);
+const reportViewerVisible = ref(false);
 
 onMounted(() => { });
 
@@ -100,22 +103,25 @@ function handleResponse(data: any) {
     addChart(chart);
     dialogBox.value?.addMessage({
       content: "查询成功，图表已生成",
-      sender: "assistant"
+      sender: "assistant",
+      attachment: null
     });
     messageLogs.push({
       content: `create chart ${chart.id}`,
       role: "system"
     });
   } else if (data["query_type"] == "report") {
-    const reportName = data["download_name"];
-    const reportUrl = data["report_path"];
-    downloadAPI(reportUrl, reportName);
+    // const reportName = data["download_name"];
+    // const reportUrl = data["report_path"];
+    // downloadAPI(reportUrl, reportName);
+    const markdownContent = data.markdown_content;
     dialogBox.value?.addMessage({
       content: "已生成报告",
-      sender: "assistant"
+      sender: "assistant",
+      attachment: markdownContent
     });
     messageLogs.push({
-      content: `create report ${reportName}`,
+      content: `report created`,
       role: "system"
     });
   } else if (data["query_type"] == "value") {
@@ -127,7 +133,8 @@ function handleResponse(data: any) {
     const content = data.response;
     dialogBox.value?.addMessage({
       content: content,
-      sender: "assistant"
+      sender: "assistant",
+      attachment: null
     });
     messageLogs.push({
       content: content,
@@ -153,7 +160,8 @@ function handleResponse(data: any) {
       addChart(newChart);
       dialogBox.value?.addMessage({
         content: "查询成功，图表已生成",
-        sender: "assistant"
+        sender: "assistant",
+        attachment: null
       });
       messageLogs.push({
         content: `create chart ${newChart.id}`,
@@ -171,7 +179,8 @@ function handleResponse(data: any) {
 
     dialogBox.value?.addMessage({
       content: "查询成功，图表已更新",
-      sender: "assistant"
+      sender: "assistant",
+      attachment: null
     });
     messageLogs.push({
       content: `update chart ${newChart.id}`,
@@ -190,7 +199,8 @@ function handleResponse(data: any) {
     console.error("Unknown query type:", data["query_type"]);
     dialogBox.value?.addMessage({
       content: "查询失败，请稍后再试",
-      sender: "assistant"
+      sender: "assistant",
+      attachment: null
     });
     messageLogs.push({
       content: "未知的查询类型",
@@ -212,7 +222,8 @@ function query() {
   // }
   dialogBox.value.addMessage({
     content: userQuery.value,
-    sender: "user"
+    sender: "user",
+    attachment: null
   });
   messageLogs.push({
     content: userQuery.value,
@@ -221,7 +232,8 @@ function query() {
   dialogBox.value.setLoading(true);
   isQuerying.value = true;
 
-  queryAPI({
+  // queryAPI({
+  testQueryAPI({
     query: userQuery.value,
     vast_system_state: charts.value.map((chart) => {
       return {
@@ -242,7 +254,8 @@ function query() {
       } else {
         dialogBox.value?.addMessage({
           content: "查询失败，请稍后再试",
-          sender: "assistant"
+          sender: "assistant",
+          attachment: null
         });
       }
     })
@@ -250,7 +263,8 @@ function query() {
       console.error(err);
       dialogBox.value?.addMessage({
         content: "查询失败，请稍后再试",
-        sender: "assistant"
+        sender: "assistant",
+        attachment: null
       });
     })
     .finally(() => {
@@ -340,6 +354,12 @@ function stopMoving() {
   onmousemove = null;
   onmouseup = null;
 }
+
+function openAttachement(content: string) {
+  // console.log("openAttachement", content);
+  reportViewer.value?.setMarkdownContent(content);
+  reportViewerVisible.value = true;
+}
 </script>
 
 <template>
@@ -397,7 +417,7 @@ function stopMoving() {
         </div>
         <div class="dialog-title">AI 助手</div>
         <div class="message-container">
-          <DialogBox ref="dialogBox" />
+          <DialogBox ref="dialogBox" @open-attachment="openAttachement" />
         </div>
         <div class="divider"></div>
         <div class="input-container">
@@ -412,6 +432,7 @@ function stopMoving() {
       </div>
     </el-main>
   </el-container>
+  <ReportViewer ref="reportViewer" v-show="reportViewerVisible" @close="reportViewerVisible = false" />
 </template>
 
 <style scoped>

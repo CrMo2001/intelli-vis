@@ -1,14 +1,25 @@
+import { reportResponse } from "./reportResponse";
+
 const testResponses = [
+  reportResponse,
   {
     "code": 200,
     "data": {
-      channelMapping: {},
-      chart_id: "geo",
-      data: [],
-      query_type: "visualization"
+      query_type: "report",
+      doc: "# test\n\n报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容\n\n报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容\n\n报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容报告内容"
     },
     "message": "分析成功"
   },
+  // {
+  //   "code": 200,
+  //   "data": {
+  //     channelMapping: {},
+  //     chart_id: "geo",
+  //     data: [],
+  //     query_type: "visualization"
+  //   },
+  //   "message": "分析成功"
+  // },
   {
     "code": 200,
     "data": {
@@ -260,7 +271,7 @@ const testResponses = [
           "percentage": 2.0304215651
         }
       ],
-      "existing_visualization_id": "chart-1",
+      "existing_visualization_id": "chart-0",
       "query_type": "replace"
     },
     "message": "分析成功"
@@ -270,8 +281,9 @@ const testResponses = [
     "code": 200,
     "data": {
       "channel_mapping": {
-        "category": "industry",
-        "value": "value"
+        "x": "industry",
+        "value": "value",
+        "group": "null",
       },
       "chart_id": "bar",
       "data": [
@@ -444,18 +456,18 @@ const testResponses = [
     },
     "message": "分析成功"
   },
-  {
-    "code": 200,
-    "data": {
-      "data": [
-        {
-          "total_energy_consumption": 133955.1892
-        }
-      ],
-      "query_type": "value"
-    },
-    "message": "分析成功"
-  },
+  // {
+  //   "code": 200,
+  //   "data": {
+  //     "data": [
+  //       {
+  //         "total_energy_consumption": 133955.1892
+  //       }
+  //     ],
+  //     "query_type": "value"
+  //   },
+  //   "message": "分析成功"
+  // },
   {
     "code": 200,
     "data": {
@@ -499,7 +511,7 @@ const testResponses = [
     "code": 200,
     "data": {
       "channel_mapping": {
-        "category": "industry",
+        "series": "industry",
         "value": "value",
         "x": "year"
       },
